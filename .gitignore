@@ -1,3 +1,5 @@
+.vscode
+
 capi/build
 capi/treeseg.egg-info
 

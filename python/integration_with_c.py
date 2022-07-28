@@ -4,13 +4,19 @@ import treeseg as ts
 
 
 def handle_c_stage(grid):
-    sample = ts.sample_grid(100, grid)
+    sample = ts.sample_grid(10, grid)
     print("Sampled grid:")
     print(sample)
     print("Grid:")
     print(grid)
 
-    return { "grid": sample }
+    # return { "grid": sample }
+
+
+def handle_vector_test(grid, labeled_grid):
+    print("Vector test begin!")
+    ts.vector_test(grid, labeled_grid)
+    print("Vector test end!")
 
 
 c_pipeline = Pipeline(verbose=True) \
@@ -26,6 +32,9 @@ c_pipeline = Pipeline(verbose=True) \
     .then(handle_compute_patches) \
     .then(handle_patches_to_dict) \
     .then(handle_compute_patches_labeled_grid) \
+    \
+    .then(handle_vector_test) \
+    \
     .then(handle_compute_patch_neighbors) \
     .then(handle_save_patches_raster) \
     .then(handle_compute_hierarchies) \

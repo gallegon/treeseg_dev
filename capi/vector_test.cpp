@@ -42,7 +42,7 @@ void Patch::add_cell(int i, int j) {
 
 void Patch::update_centroid() {
     this->centroid.first = this->sum_x / this->cell_count;
-    this->centroid.first = this->sum_y / this->cell_count;
+    this->centroid.second = this->sum_y / this->cell_count;
 }
 
 void Patch::print_cells() {
@@ -52,7 +52,9 @@ void Patch::print_cells() {
     }
 }
 
-std::vector<int> get_neighbors(int i, int j, int* dimensions, int labels[3][3], int levels[3][3]) {
+#define IDX(i, j) ((j) + (i) * (n))
+
+std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* levels) {
     // m is the i size of the array, n is the j size
     int m = dimensions[0];
     int n = dimensions[1];
@@ -62,12 +64,12 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int labels[3][3], 
     // calculated below
     std::vector<int> neighbors;
 
-    int current_id = labels[i][j];
-    int current_level = levels[i][j];
+    int current_id = labels[IDX(i, j)];
+    int current_level = levels[IDX(i, j)];
 
     if ((i - 1) >= 0) {
-        neighbor_id = labels[i - 1][j];
-        neighbor_level = levels[i - 1][j];
+        neighbor_id = labels[IDX(i - 1, j)];
+        neighbor_level = levels[IDX(i - 1, j)];
 
         if (neighbor_id != current_id) {
             if (neighbor_level > current_level) {
@@ -80,8 +82,8 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int labels[3][3], 
         //neighbors.push_back(labels[i - 1][j]);
     }
     if ((i + 1) < m) {
-        neighbor_id = labels[i + 1][j];
-        neighbor_level = levels[i + 1][j];
+        neighbor_id = labels[IDX(i + 1, j)];
+        neighbor_level = levels[IDX(i + 1, j)];
 
         if (neighbor_id != current_id) {
             if (neighbor_level > current_level) {
@@ -95,8 +97,8 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int labels[3][3], 
         //neighbors.push_back(labels[i + 1][j]);
     }
     if ((j - 1) >= 0) {
-        neighbor_id = labels[i][j - 1];
-        neighbor_level = levels[i][j - 1];
+        neighbor_id = labels[IDX(i, j - 1)];
+        neighbor_level = levels[IDX(i, j - 1)];
 
         if (neighbor_id != current_id) {
             if (neighbor_level > current_level) {
@@ -109,8 +111,8 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int labels[3][3], 
         //neighbors.push_back(labels[i][j - 1]);
     }
     if ((j + 1) < n) {
-        neighbor_id = labels[i][j + 1];
-        neighbor_level = levels[i][j + 1];
+        neighbor_id = labels[IDX(i, j + 1)];
+        neighbor_level = levels[IDX(i, j + 1)];
 
         if (neighbor_id != current_id) {
             if (neighbor_level > current_level) {
@@ -126,7 +128,7 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int labels[3][3], 
     return neighbors;
 }
 
-void create_patches(int labels[3][3], int levels[3][3], int* dimensions) {
+void create_patches(int* labels, int* levels, int* dimensions) {
     std::map<int, Patch> patches;
 
     // Use this dictionary to keep track of patches that have no parent.
@@ -144,7 +146,7 @@ void create_patches(int labels[3][3], int levels[3][3], int* dimensions) {
 
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-            current_feature = labels[i][j];
+            current_feature = labels[j + i * n];
             // check if the feature has already been turned into a patch
             it = patches.find(current_feature);
 
@@ -187,17 +189,17 @@ void create_patches(int labels[3][3], int levels[3][3], int* dimensions) {
     }
 
     // Print the patches for testing
-    for (it = patches.begin(); it != patches.end(); ++it) {
-        std::cout << it->first << std::endl;
-        (it->second).print_cells();
-        std::cout << std::endl;
-    }
+    // for (it = patches.begin(); it != patches.end(); ++it) {
+    //     std::cout << it->first << std::endl;
+    //     (it->second).print_cells();
+    //     std::cout << std::endl;
+    // }
 
     // Print the edges for testing
-    std::pair<edge_iterator, edge_iterator> ei = edges(g);
-    std::copy(ei.first, ei.second,
-        std::ostream_iterator<boost::adjacency_list<>::edge_descriptor>{
-        std::cout, "\n"});
+    // std::pair<edge_iterator, edge_iterator> ei = edges(g);
+    // std::copy(ei.first, ei.second,
+        // std::ostream_iterator<boost::adjacency_list<>::edge_descriptor>{
+        // std::cout, "\n"});
 }
 
 void print_array(int arr[3][3], int m, int n) {
@@ -214,70 +216,70 @@ struct patch_visitor {
     template <class T, class Graph> void operator()(T t, Graph&) {}
 };
 
-int main()
-{
-    int test_arr[3][3] = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
+// int main()
+// {
+//     int test_arr[3][3] = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
 
-    int test_levels[3][3] = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
-    int test_arr2[3][3] = { {5, 1, 2},
-                            {1, 1, 2},
-                            {4, 3, 3}
-    };
+//     int test_levels[3][3] = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
+//     int test_arr2[3][3] = { {5, 1, 2},
+//                             {1, 1, 2},
+//                             {4, 3, 3}
+//     };
 
-    int test_levels2[3][3] = {  {4, 3, 1}, 
-                                {3, 3, 1}, 
-                                {5, 7, 7} };
+//     int test_levels2[3][3] = {  {4, 3, 1}, 
+//                                 {3, 3, 1}, 
+//                                 {5, 7, 7} };
 
-    int dims[2] = { 3, 3 };
+//     int dims[2] = { 3, 3 };
 
-    std::cout << "Labeled features sample" << std::endl;
-    print_array(test_arr2, 3, 3);
+//     std::cout << "Labeled features sample" << std::endl;
+//     print_array(test_arr2, 3, 3);
 
-    std::cout << std::endl;
+//     std::cout << std::endl;
 
-    std::cout << "Discrete levels sample" << std::endl;
-    print_array(test_levels2, 3, 3);
+//     std::cout << "Discrete levels sample" << std::endl;
+//     print_array(test_levels2, 3, 3);
 
-    std::cout << std::endl;
+//     std::cout << std::endl;
 
-#if 0
-    int i = 0;
-    int j = 0;
-    int dims[2] = { 3, 3 };
-    std::vector<int> test = get_neighbors(i, j, dims, test_arr, test_levels);
+// #if 0
+//     int i = 0;
+//     int j = 0;
+//     int dims[2] = { 3, 3 };
+//     std::vector<int> test = get_neighbors(i, j, dims, test_arr, test_levels);
 
-    for (int i : test)
-        std::cout << i << " ";
+//     for (int i : test)
+//         std::cout << i << " ";
 
-    std::cout << std::endl;
+//     std::cout << std::endl;
 
-//# if 0
-    std::cout << "Hello World!\n";
+// //# if 0
+//     std::cout << "Hello World!\n";
 
-    DirectedGraph g;
+//     DirectedGraph g;
 
-    boost::add_edge(0, 1, 8, g);
-    boost::add_edge(0, 3, 18, g);
-    boost::add_edge(1, 2, 20, g);
-    boost::add_edge(2, 3, 2, g);
-    boost::add_edge(3, 1, 1, g);
-    boost::add_edge(1, 3, 7, g);
-    boost::add_edge(1, 4, 1, g);
-    boost::add_edge(4, 5, 6, g);
-    boost::add_edge(2, 5, 7, g);
+//     boost::add_edge(0, 1, 8, g);
+//     boost::add_edge(0, 3, 18, g);
+//     boost::add_edge(1, 2, 20, g);
+//     boost::add_edge(2, 3, 2, g);
+//     boost::add_edge(3, 1, 1, g);
+//     boost::add_edge(1, 3, 7, g);
+//     boost::add_edge(1, 4, 1, g);
+//     boost::add_edge(4, 5, 6, g);
+//     boost::add_edge(2, 5, 7, g);
 
-    std::pair<edge_iterator, edge_iterator> ei = edges(g);
+//     std::pair<edge_iterator, edge_iterator> ei = edges(g);
 
-    std::cout << "Number of edges = " << num_edges(g) << "\n";
-    std::cout << "Edge list:\n";
+//     std::cout << "Number of edges = " << num_edges(g) << "\n";
+//     std::cout << "Edge list:\n";
 
-    std::copy(ei.first, ei.second,
-        std::ostream_iterator<boost::adjacency_list<>::edge_descriptor>{
-        std::cout, "\n"});
-#endif
+//     std::copy(ei.first, ei.second,
+//         std::ostream_iterator<boost::adjacency_list<>::edge_descriptor>{
+//         std::cout, "\n"});
+// #endif
 
-    create_patches(test_arr2, test_levels2, dims);
+//     create_patches(test_arr2, test_levels2, dims);
 
-    return 0;
+//     return 0;
 
-}
+// }

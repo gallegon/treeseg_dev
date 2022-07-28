@@ -5,6 +5,43 @@
 #include <math.h>
 #include <iostream>
 
+#include "vector_test.cpp"
+
+
+static PyObject* vector_test(PyObject* self, PyObject* args) {
+    PyObject* argGrid;
+    PyObject* argLabels;
+    if (!PyArg_ParseTuple(args, "OO", &argGrid, &argLabels)) {
+        return NULL;
+    }
+
+    PyArrayObject* arrayGrid = (PyArrayObject*) PyArray_FROM_OTF(argGrid, NPY_INT, NPY_ARRAY_IN_ARRAY);
+    PyArrayObject* arrayLabels = (PyArrayObject*) PyArray_FROM_OTF(argLabels, NPY_INT, NPY_ARRAY_IN_ARRAY);
+    if (arrayGrid == NULL || arrayLabels == NULL) {
+        goto fail;
+    }
+
+    int ndims = PyArray_NDIM(arrayGrid);
+    npy_intp* dims = PyArray_DIMS(arrayGrid);
+    int ddims[] = {dims[0], dims[1]};
+
+    int* dataGrid = (int*) PyArray_DATA(arrayGrid);
+    int* dataLabels = (int*) PyArray_DATA(arrayLabels);
+    
+    create_patches(dataGrid, dataLabels, ddims);
+
+    // Py_INCREF(Py_None);
+    // Py_XDECREF(arrayGrid);
+    // Py_XDECREF(arrayLabels);
+    Py_RETURN_NONE;
+
+fail:
+    Py_XDECREF(arrayGrid);
+    Py_XDECREF(arrayLabels);
+
+    return NULL;
+}
+
 
 static PyObject* sample_grid(PyObject* self, PyObject* args) {
     long count;
@@ -49,7 +86,13 @@ static PyObject* sample_grid(PyObject* self, PyObject* args) {
         }
     }
 
+    std::cout << "Finished grid sampling!" << std::endl;
+
     // Py_DECREF(array);
+    // Py_DECREF(array);
+    // Py_DECREF(sample_array);
+    // Py_XDECREF(array);
+    // Py_XDECREF(sample_array);
 
     return PyArray_Return(sample_array);
 
@@ -101,6 +144,7 @@ fail:
 
 static PyMethodDef treesegMethods[] = {
     {"sample_grid", sample_grid, METH_VARARGS, "Sample some elements on a 2d grid"},
+    {"vector_test", vector_test, METH_VARARGS, "Neighbors on neighbors"},
     // {"array_sum", array_sum, METH_VARARGS, "Sums all the elements of the given array."},
     {NULL, NULL, NULL, NULL}
 };

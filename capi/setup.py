@@ -5,7 +5,8 @@ treeseg_module = Extension('treeseg', sources=['treeseg.cpp'],
                         include_dirs=[
                             np.get_include(),
                             "C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL\include",
-                            "C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL"
+                            "C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL",
+                            "libs"
                         ],
                         library_dirs=[
                             "C:\\Users\\Sam\\anaconda3\\envs\\treeseg_dev\\Library\\lib"
