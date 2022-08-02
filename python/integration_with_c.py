@@ -18,6 +18,32 @@ def handle_vector_test(grid, labeled_grid):
     ts.vector_test(grid, labeled_grid)
     print("Vector test end!")
 
+    print("== Grid")
+    print(grid)
+    print()
+    print("== Labeled Grid")
+    print(labeled_grid)
+    print()
+
+import cv2
+
+def handle_label_patches(grid):
+    image = grid.astype(np.uint8)
+    labeled_grid = np.ndarray(grid.shape, dtype=np.uint8)
+    connectivity = 4
+    num_labels, labels = cv2.connectedComponents(image, labeled_grid, connectivity)
+
+    # print(f"{num_labels=}")
+    # print(f"Labels:")
+    # print(f"{labels}")
+    # print(f"labeled_grid:")
+    # print(f"{labeled_grid}")
+
+    # return {
+    #     "labeled_grid":
+    # }
+
+
 
 c_pipeline = Pipeline(verbose=True) \
     .then(handle_create_file_names_and_paths) \
@@ -35,13 +61,5 @@ c_pipeline = Pipeline(verbose=True) \
     \
     .then(handle_vector_test) \
     \
-    .then(handle_compute_patch_neighbors) \
-    .then(handle_save_patches_raster) \
-    .then(handle_compute_hierarchies) \
-    .then(handle_find_connected_hierarchies) \
-    .then(handle_calculate_edge_weight) \
-    .then(handle_partition_graph) \
-    .then(handle_trees_to_labeled_grid) \
-    .then(handle_save_partition_raster) \
-    .then(handle_label_point_cloud) \
-    .then(handle_save_context_file)
+    .then(handle_save_patches_raster)
+

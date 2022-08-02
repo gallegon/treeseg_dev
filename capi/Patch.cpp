@@ -136,6 +136,8 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     int* levelsData = (int*) PyArray_DATA(levels);
     int* labelsData = (int*) PyArray_DATA(labels);
 
+
+
     int m = dimensions[0];
     int n = dimensions[1];
     int current_feature;
@@ -148,8 +150,9 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     // TODO: implement this 2D loop with NumPy's array iterators.
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-            //current_feature = (int) *(PyArray_GETPTR2(labels, (npy_intp)i, (npy_intp)j));
-            current_feature = labelsData[IDX(i, j)];
+            current_feature = *((int*) PyArray_GETPTR2(labels, i, j));
+            // current_feature = (int) *(PyArray_GETPTR2(labels, (npy_intp)i, (npy_intp)j));
+            // current_feature = labelsData[IDX(i, j)];
             
             // Don't compute a patch for a cell with that has id 0
             if (current_feature == 0) {
@@ -195,6 +198,8 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             }
         }
     }
+
+    std::cout << "Num of parentless patches = " << parentless_patches.size() << std::endl;
 
 
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor vertex_descriptor;
