@@ -96,22 +96,6 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* 
         neighbor_j = j;
 
         addDirectedNeighbor(neighbors, neighbor_i, neighbor_j, n, current_id, current_level, labels, levels);
-        // OLD WAY
-        /*
-        neighbor_id = labels[IDX(i - 1, j)];
-        neighbor_level = levels[IDX(i - 1, j)];
-
-
-        if (neighbor_id != current_id) {
-            if (neighbor_level > current_level) {
-                // set the direction flag towards the higher neighbor
-                neighbor_id = neighbor_id * -1;
-            }
-            neighbors.push_back(neighbor_id);
-
-        }
-        */
-        //neighbors.push_back(labels[i - 1][j]);
     }
     // get bottom neighboring cell
     if ((i + 1) < m) {
@@ -120,20 +104,6 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* 
 
         addDirectedNeighbor(neighbors, neighbor_i, neighbor_j, n, current_id, current_level, labels, levels);
 
-        /*
-        neighbor_id = labels[IDX(i + 1, j)];
-        neighbor_level = levels[IDX(i + 1, j)];
-
-        if (neighbor_id != current_id) {
-            if (neighbor_level > current_level) {
-                // set the direction flag towards the higher neighbor
-                neighbor_id = neighbor_id * -1;
-            }
-            neighbors.push_back(neighbor_id);
-
-        }
-        */
-        //neighbors.push_back(labels[i + 1][j]);
     }
     // get left neighbor
     if ((j - 1) >= 0) {
@@ -141,20 +111,6 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* 
         neighbor_j = j + LEFT;
 
         addDirectedNeighbor(neighbors, neighbor_i, neighbor_j, n, current_id, current_level, labels, levels);
-        /*
-        neighbor_id = labels[IDX(i, j - 1)];
-        neighbor_level = levels[IDX(i, j - 1)];
-
-        if (neighbor_id != current_id) {
-            if (neighbor_level > current_level) {
-                // set the direction flag towards the higher neighbor
-                neighbor_id = neighbor_id * -1;
-            }
-            neighbors.push_back(neighbor_id);
-
-        }
-        */
-        //neighbors.push_back(labels[i][j - 1]);
     }
 
     // get right neighbor
@@ -163,20 +119,6 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* 
         neighbor_j = j + RIGHT;
 
         addDirectedNeighbor(neighbors, neighbor_i, neighbor_j, n, current_id, current_level, labels, levels);
-        /*
-        neighbor_id = labels[IDX(i, j + 1)];
-        neighbor_level = levels[IDX(i, j + 1)];
-
-        if (neighbor_id != current_id) {
-            if (neighbor_level > current_level) {
-                // set the direction flag towards the higher neighbor
-                neighbor_id = neighbor_id * -1;
-            }
-            neighbors.push_back(neighbor_id);
-
-        }
-        */
-        //neighbors.push_back(labels[i][j + 1]);
     }
 
     return neighbors;
@@ -254,22 +196,12 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         }
     }
 
-    // print for testing
-    /*
-    for(it = parentless_patches.begin(); it != parentless_patches.end(); ++it) {
-        std::cout << "Parentless patch id: " << it->first << std::endl;
-    }
-    */
-    //boost::property_map< DirectedGraph, boost::edge_weight_t >::type weightmap
-    //    = boost::get(edge_weight, g);
 
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor vertex_descriptor;
     typedef boost::property_map<DirectedGraph, boost::vertex_index_t>::type IdMap;
-    //std::vector< vertex_descriptor > pred(num_vertices(g));
-    //std::vector<vertex_descriptor> pred(num_vertices(G));
 
     std::vector< int > d(num_vertices(g));
-    //vertex_descriptor s = vertex(30, g);
+
 
     std::vector<vertex_descriptor> pred(boost::num_vertices(g));
     boost::iterator_property_map<std::vector<vertex_descriptor>::iterator,
@@ -288,7 +220,6 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     for (it = parentless_patches.begin(); it != parentless_patches.end(); ++it) {
         int vertex_id = it->first;
         vertex_descriptor s = vertex(vertex_id, g);
-        //std::cout << "Parentless patch id: " << it->first << std::endl;
         dijkstra_shortest_paths(g, s,
             predecessor_map(predmap)
             .distance_map(distmap_vect));
@@ -306,24 +237,4 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         std::cout << std::endl;
         
     }
-    /*
-    dijkstra_shortest_paths(g, s,
-        predecessor_map(predmap)
-        .distance_map(distmap_vect));
-    */
-    // print out distances for testing
-    /*
-    boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
-    for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-        if (distvector[*vi] != 2147483647) 
-            std::cout << "distance(" << *vi << ") = " << distvector[*vi] << ", ";
-    }
-    std::cout << std::endl;
-    */
 }
-
-
-struct patch_visitor {
-    typedef boost::on_discover_vertex event_filter;
-    template <class T, class Graph> void operator()(T t, Graph&) {}
-};
