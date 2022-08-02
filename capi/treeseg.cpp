@@ -5,7 +5,7 @@
 #include <math.h>
 #include <iostream>
 
-#include "vector_test.cpp"
+#include "Patch.hpp"
 
 
 static PyObject* vector_test(PyObject* self, PyObject* args) {
@@ -27,8 +27,8 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     int* dataGrid = (int*) PyArray_DATA(arrayGrid);
     int* dataLabels = (int*) PyArray_DATA(arrayLabels);
-    
-    create_patches(dataGrid, dataLabels, ddims);
+
+    create_patches(arrayLabels, arrayGrid, ddims);
 
     // Py_INCREF(Py_None);
     // Py_XDECREF(arrayGrid);
@@ -58,7 +58,7 @@ static PyObject* sample_grid(PyObject* self, PyObject* args) {
         goto fail;
     }
 
-    
+
     std::cout << "Parsed arguments into C objects!" << std::endl;
 
     int ndim = PyArray_NDIM(array);
@@ -116,7 +116,7 @@ static PyObject* array_sum(PyObject* self, PyObject* args) {
     arr = PyArray_FROM_OTF(arg, NPY_INT, NPY_ARRAY_IN_ARRAY);
     if (arr == NULL)
         goto fail;
-    
+
     // Get the number of dimensions, shape, and size of the numpy array.
     int ndim = PyArray_NDIM(arr);
     npy_intp* shape = PyArray_DIMS(arr);
@@ -133,7 +133,7 @@ static PyObject* array_sum(PyObject* self, PyObject* args) {
 
     // Decrement reference count (auto incremented with PyArray_FROM_OTF).
     Py_DECREF(arr);
-    
+
     // Return a Python representation of the computed value.
     return Py_BuildValue("i", sum);
 
