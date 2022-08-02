@@ -71,7 +71,10 @@ void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neigh
 
 #define IDX(i, j) ((j) + (i) * (n))
 
-std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* levels) {
+#define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
+#define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
+
+std::vector<int> get_neighbors(int i, int j, int* dimensions, PyARrayObject* labels, PyArrayObject* levels) {
     // m is the i size of the array, n is the j size
     int m = dimensions[0];
     int n = dimensions[1];
@@ -83,8 +86,8 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, int* labels, int* 
     std::vector<int> neighbors;
 
     // TODO: find out a way to not have to cast from system int to npy_intp
-    int current_id = labels[IDX(i, j)];
-    int current_level = levels[IDX(i, j)];
+    int current_id = Get2D(labels, i, j);
+    int current_level = Get2D(labels, i, j);
 
     // Old way using non-NumPy arrays
     //int current_id = labels[IDX(i, j)];
@@ -133,8 +136,8 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
 
     //c-style array of data
 
-    int* levelsData = (int*) PyArray_DATA(levels);
-    int* labelsData = (int*) PyArray_DATA(labels);
+    // int* levelsData = (int*) PyArray_DATA(levels);
+    // int* labelsData = (int*) PyArray_DATA(labels);
 
 
 
@@ -150,7 +153,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     // TODO: implement this 2D loop with NumPy's array iterators.
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-            current_feature = *((int*) PyArray_GETPTR2(labels, i, j));
+            current_feature = Get2D(labels, i, j);
             // current_feature = (int) *(PyArray_GETPTR2(labels, (npy_intp)i, (npy_intp)j));
             // current_feature = labelsData[IDX(i, j)];
             
@@ -175,7 +178,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             }
 
             // Get the current cell's neighbors, then iterate
-            std::vector<int> neighbors = get_neighbors(i, j, dimensions, labelsData, levelsData);
+            std::vector<int> neighbors = get_neighbors(i, j, dimensions, labels, levels);
             std::vector<int>::iterator neigh_it;
             for (neigh_it = neighbors.begin(); neigh_it != neighbors.end(); ++neigh_it) {
                 int neighbor = *neigh_it;
