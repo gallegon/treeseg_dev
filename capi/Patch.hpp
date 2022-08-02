@@ -11,12 +11,12 @@
 #include <vector>
 #include <map>
 
+#define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
+#define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
+
 typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty > DirectedGraph;
 typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
-
-// returns an index i, j for 1D array
-#define IDX(i, j) ((j) + (i) * (n))
 
 class Patch {
 private:
@@ -34,6 +34,6 @@ public:
 };
 
 std::vector<int> get_neighbors(int i, int j, int* dimension,
-                               int* labels, int* levels);
+                               PyArrayObject* labels, PyArrayObject* levels);
 
 void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions);

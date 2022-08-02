@@ -46,11 +46,11 @@ void Patch::print_cells() {
 
 
 void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neighbor_j, int n,int current_id,
-                        int current_level, int* labels,
-                        int* levels) {
+                        int current_level, PyArrayObject* labels,
+                        PyArrayObject* levels) {
     // get the feature id and level of the neighboring cell
-    int neighbor_id = labels[IDX(neighbor_i, neighbor_j)];
-    int neighbor_level = levels[IDX(neighbor_i, neighbor_j)];
+    int neighbor_id = Get2D(labels, neighbor_i, neighbor_j);
+    int neighbor_level = Get2D(labels, neighbor_i, neighbor_j);
 
     // if the id of the feature is different the the current id, we know that
     // two patches are connected.
@@ -69,12 +69,7 @@ void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neigh
 #define RIGHT 1
 #define LEFT -1
 
-#define IDX(i, j) ((j) + (i) * (n))
-
-#define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
-#define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
-
-std::vector<int> get_neighbors(int i, int j, int* dimensions, PyARrayObject* labels, PyArrayObject* levels) {
+std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* labels, PyArrayObject* levels) {
     // m is the i size of the array, n is the j size
     int m = dimensions[0];
     int n = dimensions[1];
