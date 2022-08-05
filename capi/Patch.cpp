@@ -122,7 +122,7 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* lab
     return neighbors;
 }
 
-void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions) {
+void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct TreeSegData* context) {
     std::map<int, Patch> patches;
 
     // Use this dictionary to keep track of patches that have no parent.
@@ -151,7 +151,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             current_feature = Get2D(labels, i, j);
             // current_feature = (int) *(PyArray_GETPTR2(labels, (npy_intp)i, (npy_intp)j));
             // current_feature = labelsData[IDX(i, j)];
-            
+
             // Don't compute a patch for a cell with that has id 0
             if (current_feature == 0) {
                 continue;
@@ -197,6 +197,12 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         }
     }
 
+
+
+    context->patches = patches;
+    context->parentless_patches = parentless_patches;j
+    context->PDAG = g;
+
     std::cout << "Num of parentless patches = " << parentless_patches.size() << std::endl;
 
 
@@ -220,6 +226,9 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         int&>
         distmap_vect(distvector.begin(), get(boost::vertex_index, g));
 
+    std::map<int, Patch> reachable_patches;
+    int patch_id;
+
     for (it = parentless_patches.begin(); it != parentless_patches.end(); ++it) {
         int vertex_id = it->first;
         vertex_descriptor s = vertex(vertex_id, g);
@@ -231,14 +240,23 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
 
         // std::cout << "Parentless Patch ID: " << vertex_id << std::endl;
 
-        // std::cout << "Reachable patches: ";
+        std::cout << "Reachable patches: ";
+
+        // Clear the dictionary
+        reachable_patches.clear();
+
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-            if (distvector[*vi] != 2147483647) {
-                // std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
-            }
+
+            patch_id = *vi;
+            //reachable_patches.insert(std::pair<int, Patch>(patch_id, patches.at(patch_id)));
+
+            if (distvector[*vi] != 2147483647)
+                std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
+                // Insert the patch if reachable
+                reachable_patches.insert(std::pair<int, Patch>(patch_id, patches.at(patch_id)));
         }
-        // std::cout << std::endl;
-        
+        std::cout << std::endl;
+
     }
 }

@@ -1,3 +1,6 @@
+#ifndef __PATCH__HPP
+#define __PATCH__HPP
+
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "numpy/arrayobject.h"
@@ -11,12 +14,14 @@
 #include <vector>
 #include <map>
 
+
 #define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
 #define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
 
 typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty > DirectedGraph;
 typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
+
 
 class Patch {
 private:
@@ -33,7 +38,17 @@ public:
     void update_centroid();
 };
 
+// This struct holds all the information needed for the hierarchy creation
+struct PdagData {
+    std::map<int, Patch> patches;
+    std::map<int, Patch> parentless_patches;
+    DirectedGraph graph;
+};
+
 std::vector<int> get_neighbors(int i, int j, int* dimension,
                                PyArrayObject* labels, PyArrayObject* levels);
 
-void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions);
+// create the patches and store them in PdagData context
+void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct PdagData* context);
+
+#endif
