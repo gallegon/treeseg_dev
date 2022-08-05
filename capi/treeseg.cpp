@@ -7,7 +7,7 @@
 #include <map>
 
 #include "Patch.hpp"
-
+#include "Hierarchy.hpp"
 #include "disjointsets.hpp"
 
 
@@ -36,7 +36,7 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             int h = Get2D(levels, i, j);
-            
+
             // Cells at height 0 have been marked below the height cutoff.
             if (h == 0) {
                 *Ptr2D(labels, i, j) = 0;
@@ -94,6 +94,11 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
 static PyObject* vector_test(PyObject* self, PyObject* args) {
     PyObject* argGrid;
     PyObject* argLabels;
+
+    // Used to get data from the patch creation step
+    struct PdagData pdag;
+    struct HierarchyData hierarchyContext;
+
     if (!PyArg_ParseTuple(args, "OO", &argGrid, &argLabels)) {
         return NULL;
     }
@@ -108,7 +113,12 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     npy_intp* dims = PyArray_DIMS(arrayGrid);
     int ddims[] = {dims[0], dims[1]};
 
-    create_patches(arrayLabels, arrayGrid, ddims);
+
+    // Used to get data from the patch creation step
+    //struct PdagData pdag;
+
+    create_patches(arrayLabels, arrayGrid, ddims, pdag);
+    compute_hierarchies(pdag, hierarchyContext);
 
     // Py_INCREF(Py_None);
     // Py_XDECREF(arrayGrid);

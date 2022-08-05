@@ -9,8 +9,9 @@ Class definition for a Patch.  A contigous patch of equal level cells in the
 discretized grid.
 
 */
-Patch::Patch(int id) {
+Patch::Patch(int id, int level) {
     this->id = id;
+    this->level = level;
     this->cell_count = 0;
 }
 
@@ -46,14 +47,29 @@ void Patch::print_cells() {
     }
 }
 
+// This is used for keeping track of which hierarchies are connected.
+void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int>>& connected_hierarchies) {
+    std::vector<int>::iterator it;
+    for (it = this->associated_hierarchies.begin(); it != this->associated_hierarchies.end(); ++it) {
+        if (hierarchy_id > *it) {
+            connected_hierarchies.insert(std::make_pair(hierarchy_id, *it));
+        }
+        else {
+            connected_hierarchies.insert(std::make_pair(*it, hierarchy_id));
+        }
+    }
+}
 
+int Patch::get_level() {
+    return (this->level);
+}
 
 void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neighbor_j, int n,int current_id,
                         int current_level, PyArrayObject* labels,
                         PyArrayObject* levels) {
     // get the feature id and level of the neighboring cell
     int neighbor_id = Get2D(labels, neighbor_i, neighbor_j);
-    int neighbor_level = Get2D(labels, neighbor_i, neighbor_j);
+    int neighbor_level = Get2D(levels, neighbor_i, neighbor_j);
 
     // if the id of the feature is different the the current id, we know that
     // two patches are connected.
@@ -85,7 +101,7 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* lab
 
     // TODO: find out a way to not have to cast from system int to npy_intp
     int current_id = Get2D(labels, i, j);
-    int current_level = Get2D(labels, i, j);
+    int current_level = Get2D(levels, i, j);
 
     // Old way using non-NumPy arrays
     //int current_id = labels[IDX(i, j)];
@@ -125,23 +141,26 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* lab
     return neighbors;
 }
 
-void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions) {
-    std::map<int, Patch> patches;
+void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct PdagData& context) {
+    //std::map<int, Patch> patches;
 
     // Use this dictionary to keep track of patches that have no parent.
     // These will be the "local maxima" patches
-    std::map<int, Patch> parentless_patches;
+    //std::map<int, Patch> parentless_patches;
 
     //c-style array of data
 
     // int* levelsData = (int*) PyArray_DATA(levels);
     // int* labelsData = (int*) PyArray_DATA(labels);
 
+    // This is an edge list of what will ultimately become the PDAG
+    std::set<std::pair<int, int>> connected_patches;
+    std::set<std::pair<int, int>>::iterator set_iter;
 
 
     int m = dimensions[0];
     int n = dimensions[1];
-    int current_feature;
+    int current_feature, current_level;
 
     DirectedGraph g;
 
@@ -152,6 +171,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
             current_feature = Get2D(labels, i, j);
+            current_level = Get2D(levels, i, j);
             // current_feature = (int) *(PyArray_GETPTR2(labels, (npy_intp)i, (npy_intp)j));
             // current_feature = labelsData[IDX(i, j)];
 
@@ -160,19 +180,19 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
                 continue;
             }
             // check if the feature has already been turned into a patch
-            it = patches.find(current_feature);
+            it = context.patches.find(current_feature);
 
             // If the feature is already a patch, just add the cell
-            if (it != patches.end()) {
+            if (it != context.patches.end()) {
                 it->second.add_cell(i, j);
             }
             // Else the feature is not a patch
             else {
                 // create a patch, then add the cell to it
-                Patch p(current_feature);
+                Patch p(current_feature, current_level);
                 p.add_cell(i, j);
-                patches.insert(std::pair<int, Patch>(current_feature, p));
-                parentless_patches.insert(std::pair<int, Patch>(current_feature, p));
+                context.patches.insert(std::pair<int, Patch>(current_feature, p));
+                context.parentless_patches.insert(std::pair<int, Patch>(current_feature, p));
             }
 
             // Get the current cell's neighbors, then iterate
@@ -186,42 +206,59 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
                 // neighbor.  If a neighbor in neighbors is negative, then the patch is a child to it's
                 // neighbor
                 if (neighbor < 0) {
-                    boost::add_edge((neighbor * -1), current_feature, 1, g);
+                    //boost::add_edge((neighbor * -1), current_feature, 1, g);
+                    connected_patches.insert(std::make_pair((neighbor * -1), current_feature));
                     // Here the current feature is a child patch to some higher level patch.
                     // Therefore this patch cannot be a parentless patch.
-                    parentless_patches.erase(current_feature);
+                    context.parentless_patches.erase(current_feature);
                 }
                 // Here the patch is the parent to some lower patch.
                 else {
-                    boost::add_edge(current_feature, neighbor, 1, g);
-                    parentless_patches.erase(neighbor);
+                    //boost::add_edge(current_feature, neighbor, 1, g);
+                    connected_patches.insert(std::make_pair(current_feature, neighbor));
+                    context.parentless_patches.erase(neighbor);
                 }
             }
         }
     }
+    std::cout << "Completed edge list" << std::endl;
+    // some abstraction for graph creation
+    int parent, child;
+    // add all the edges to the Boost graph container
+    for (set_iter = connected_patches.begin(); set_iter != connected_patches.end(); ++set_iter) {
+        parent = set_iter->first;
+        child = set_iter->second;
+        boost::add_edge(parent, child, 1, context.graph);
+    }
 
-    std::cout << "Num of parentless patches = " << parentless_patches.size() << std::endl;
+    /*
+    context.patches = patches;
+    context.parentless_patches = parentless_patches;
+    context.graph = g;
+    */
+    /*
+    std::cout << "Num of parentless patches = " << context.parentless_patches.size() << std::endl;
 
 
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor vertex_descriptor;
     typedef boost::property_map<DirectedGraph, boost::vertex_index_t>::type IdMap;
 
-    std::vector< int > d(num_vertices(g));
+    std::vector< int > d(num_vertices(context.graph));
 
 
-    std::vector<vertex_descriptor> pred(boost::num_vertices(g));
+    std::vector<vertex_descriptor> pred(boost::num_vertices(context.graph));
     boost::iterator_property_map<std::vector<vertex_descriptor>::iterator,
         IdMap,
         vertex_descriptor,
         vertex_descriptor&>
-        predmap(pred.begin(), get(boost::vertex_index, g));
+        predmap(pred.begin(), get(boost::vertex_index, context.graph));
 
-    std::vector<int> distvector(num_vertices(g));
+    std::vector<int> distvector(num_vertices(context.graph));
     boost::iterator_property_map<std::vector<int>::iterator,
         IdMap,
         int,
         int&>
-        distmap_vect(distvector.begin(), get(boost::vertex_index, g));
+        distmap_vect(distvector.begin(), get(boost::vertex_index, context.graph));
 
     // Some debug/trace variables.
     int count = 0;
@@ -231,17 +268,17 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     int total_reachable = 0;
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    for (it = parentless_patches.begin(); it != parentless_patches.end(); ++it) {
+    for (it = context.parentless_patches.begin(); it != context.parentless_patches.end(); ++it) {
 
         int vertex_id = it->first;
-        vertex_descriptor s = vertex(vertex_id, g);
-        dijkstra_shortest_paths(g, s,
+        vertex_descriptor s = vertex(vertex_id, context.graph);
+        dijkstra_shortest_paths(context.graph, s,
             predecessor_map(predmap)
             .distance_map(distmap_vect));
 
         // -- Reachable patches
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
-        for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
+        for (boost::tie(vi, vend) = vertices(context.graph); vi != vend; ++vi) {
             if (distvector[*vi] != 2147483647) {
                 // std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
                 total_reachable += 1;
@@ -251,7 +288,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         // For debugging/tracing purposes; print an update every 1% of parentless patches processed.
         if (count >= next_count || count == total_count) {
             int p = ((float) count / total_count) * 100;
-            std::cout << "Patch ID: " << vertex_id << " :: " << (count + 1) << "/" << parentless_patches.size() << " = " << p << "%" << std::endl;
+            std::cout << "Patch ID: " << vertex_id << " :: " << (count + 1) << "/" << context.parentless_patches.size() << " = " << p << "%" << std::endl;
             auto step_time = (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin).count()) / 1000000.0;
             std::cout << "    -- Time since last update (seconds): " << step_time << std::endl;
             next_count += one_percent_amount;
@@ -261,7 +298,8 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     }
 
     std::cout << "Total reachable nodes from parentless patches = " << total_reachable << std::endl;
-    std::cout << "Number of parentless patches = " << parentless_patches.size() << std::endl;
-    std::cout << "Average reachable nodes per parentless patch = " << ((float) total_reachable / parentless_patches.size()) << std::endl;
+    std::cout << "Number of parentless patches = " << context.parentless_patches.size() << std::endl;
+    std::cout << "Average reachable nodes per parentless patch = " << ((float) total_reachable / context.parentless_patches.size()) << std::endl;
     std::cout << std::endl;
+    */
 }
