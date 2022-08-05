@@ -1,5 +1,8 @@
 #include "Patch.hpp"
 
+// For debugging elapsed time
+#include <chrono>
+
 /*
 
 Class definition for a Patch.  A contigous patch of equal level cells in the
@@ -220,25 +223,45 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         int&>
         distmap_vect(distvector.begin(), get(boost::vertex_index, g));
 
+    // Some debug/trace variables.
+    int count = 0;
+    int total_count = parentless_patches.size() - 1;
+    int one_percent_amount = floor(total_count * 0.01);
+    int next_count = one_percent_amount;
+    int total_reachable = 0;
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     for (it = parentless_patches.begin(); it != parentless_patches.end(); ++it) {
+
         int vertex_id = it->first;
         vertex_descriptor s = vertex(vertex_id, g);
         dijkstra_shortest_paths(g, s,
             predecessor_map(predmap)
             .distance_map(distmap_vect));
 
-        // std::cout << std::endl;
-
-        // std::cout << "Parentless Patch ID: " << vertex_id << std::endl;
-
-        // std::cout << "Reachable patches: ";
+        // -- Reachable patches
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
             if (distvector[*vi] != 2147483647) {
                 // std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
+                total_reachable += 1;
             }
         }
-        // std::cout << std::endl;
-        
+
+        // For debugging/tracing purposes; print an update every 1% of parentless patches processed.
+        if (count >= next_count || count == total_count) {
+            int p = ((float) count / total_count) * 100;
+            std::cout << "Patch ID: " << vertex_id << " :: " << (count + 1) << "/" << parentless_patches.size() << " = " << p << "%" << std::endl;
+            auto step_time = (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin).count()) / 1000000.0;
+            std::cout << "    -- Time since last update (seconds): " << step_time << std::endl;
+            next_count += one_percent_amount;
+            begin = std::chrono::steady_clock::now();
+        }
+        count += 1;
     }
+
+    std::cout << "Total reachable nodes from parentless patches = " << total_reachable << std::endl;
+    std::cout << "Number of parentless patches = " << parentless_patches.size() << std::endl;
+    std::cout << "Average reachable nodes per parentless patch = " << ((float) total_reachable / parentless_patches.size()) << std::endl;
+    std::cout << std::endl;
 }

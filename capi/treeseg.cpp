@@ -4,6 +4,7 @@
 #include "numpy/ufuncobject.h"
 #include <math.h>
 #include <iostream>
+#include <map>
 
 #include "Patch.hpp"
 
@@ -35,25 +36,18 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             int h = Get2D(levels, i, j);
-            bool connectLeft = false;
-            bool connectTop = false;
-
+            
+            // Cells at height 0 have been marked below the height cutoff.
             if (h == 0) {
                 *Ptr2D(labels, i, j) = 0;
                 continue;
             }
-
             // Check if left neighbor is at the same height
-            if (i > 0) {
-                int leftHeight = Get2D(levels, i - 1, j);
-                connectLeft = leftHeight == h;
-            }
+            bool connectLeft = i > 0 && Get2D(levels, i - 1, j) == h;
             // Check if top neighbor is at the same height
-            if (j > 0) {
-                int topHeight = Get2D(levels, i, j - 1);
-                connectTop = topHeight == h;
-            }
+            bool connectTop = j > 0 && Get2D(levels, i, j - 1) == h;
 
+            // Determine patch ID for the current cell.
             PatchID id;
             if (connectLeft && connectTop) {
                 PatchID leftId = Get2D(ds.labels, i - 1, j);
@@ -74,12 +68,24 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
         }
     }
 
+    // Re-label the patch grid with parent ids.
+    std::map<int, int> idMap;
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
             int* ptr = Ptr2D(labels, i, j);
-            *ptr = ds.parent_of(*ptr);
+            if (*ptr == 0) {
+                continue;
+            }
+            int parent = ds.parent_of(*ptr);
+            if (idMap.find(parent) == idMap.end()) {
+                int id = 1 + idMap.size();
+                idMap[parent] = id;
+            }
+            *ptr = (int) idMap[parent];
         }
     }
+
+    std::cout << "Total number of patches = " << idMap.size() << std::endl;
 
     return PyArray_Return(labels);
 }

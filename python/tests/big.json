@@ -1,0 +1,21 @@
+{
+    "input_file_path": "sample_data/s03450w06540_nnoc.las",
+
+    "resolution": 10,
+    "discretization": 16,
+    "min_height": 4,
+    "gaussian_sigma": 0.4,
+
+    "weight_level_depth": 0.22,
+    "weight_node_depth": 0.22,
+    "weight_shared_ratio": 0.22,
+    "weight_top_distance": 0.22,
+    "weight_centroid_distance": 0.0,
+    "weight_threshold": 0.22,
+
+    "espg_string": "EPSG:2027",
+    "save_grid_raster": true,
+    "save_patches_raster": true,
+    "save_partition_raster": true,
+    "save_context_file": true
+}
