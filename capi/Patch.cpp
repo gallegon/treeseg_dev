@@ -125,7 +125,7 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* lab
     return neighbors;
 }
 
-void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct TreeSegData* context) {
+void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions) {
     std::map<int, Patch> patches;
 
     // Use this dictionary to keep track of patches that have no parent.
@@ -199,12 +199,6 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             }
         }
     }
-
-
-
-    context->patches = patches;
-    context->parentless_patches = parentless_patches;j
-    context->PDAG = g;
 
     std::cout << "Num of parentless patches = " << parentless_patches.size() << std::endl;
 

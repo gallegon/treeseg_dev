@@ -47,6 +47,13 @@ struct PdagData {
     DirectedGraph graph;
 };
 
+// This struct holds all the information needed for the hierarchy creation
+struct PdagData {
+    std::map<int, Patch> patches;
+    std::map<int, Patch> parentless_patches;
+    DirectedGraph graph;
+};
+
 std::vector<int> get_neighbors(int i, int j, int* dimension,
                                PyArrayObject* labels, PyArrayObject* levels);
 
