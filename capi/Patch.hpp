@@ -27,6 +27,7 @@ class Patch {
 private:
     int id;
     std::vector<std::pair<int, int>> cells;
+    std::vector<int> associated_hierachies;
     std::pair<double, double> centroid;
     int sum_x = 0;
     int sum_y = 0;
@@ -36,6 +37,7 @@ public:
     void add_cell(int, int);
     void print_cells();
     void update_centroid();
+    void add_hierarchy(int, std::set<std::pair<int, int>>);
 };
 
 // This struct holds all the information needed for the hierarchy creation

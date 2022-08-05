@@ -229,11 +229,6 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         int&>
         distmap_vect(distvector.begin(), get(boost::vertex_index, g));
 
-<<<<<<< HEAD
-    std::map<int, Patch> reachable_patches;
-    int patch_id;
-
-=======
     // Some debug/trace variables.
     int count = 0;
     int total_count = parentless_patches.size() - 1;
@@ -242,7 +237,6 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     int total_reachable = 0;
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
->>>>>>> 8110fa2c777b64a370c26228676f3e17c6bdfde2
     for (it = parentless_patches.begin(); it != parentless_patches.end(); ++it) {
 
         int vertex_id = it->first;
@@ -251,30 +245,6 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             predecessor_map(predmap)
             .distance_map(distmap_vect));
 
-<<<<<<< HEAD
-        // std::cout << std::endl;
-
-        // std::cout << "Parentless Patch ID: " << vertex_id << std::endl;
-
-        std::cout << "Reachable patches: ";
-
-        // Clear the dictionary
-        reachable_patches.clear();
-
-        boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
-        for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-
-            patch_id = *vi;
-            //reachable_patches.insert(std::pair<int, Patch>(patch_id, patches.at(patch_id)));
-
-            if (distvector[*vi] != 2147483647)
-                std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
-                // Insert the patch if reachable
-                reachable_patches.insert(std::pair<int, Patch>(patch_id, patches.at(patch_id)));
-        }
-        std::cout << std::endl;
-
-=======
         // -- Reachable patches
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
@@ -294,7 +264,6 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             begin = std::chrono::steady_clock::now();
         }
         count += 1;
->>>>>>> 8110fa2c777b64a370c26228676f3e17c6bdfde2
     }
 
     std::cout << "Total reachable nodes from parentless patches = " << total_reachable << std::endl;
