@@ -9,3 +9,7 @@ python/treesegmentation_output
 
 python/sample_data/ept*
 python/sample_data/VernonLA_306_nno.las
+python/sample_data/s03450w06540_nnoc.las
+python/sample_data/s03450w06540_las.las
+python/sample_data/004_las.las
+python/sample_data/306_las.las
