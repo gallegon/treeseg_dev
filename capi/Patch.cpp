@@ -227,17 +227,18 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
             predecessor_map(predmap)
             .distance_map(distmap_vect));
 
-        std::cout << std::endl;
+        // std::cout << std::endl;
 
-        std::cout << "Parentless Patch ID: " << vertex_id << std::endl;
+        // std::cout << "Parentless Patch ID: " << vertex_id << std::endl;
 
-        std::cout << "Reachable patches: ";
+        // std::cout << "Reachable patches: ";
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(g); vi != vend; ++vi) {
-            if (distvector[*vi] != 2147483647)
-                std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
+            if (distvector[*vi] != 2147483647) {
+                // std::cout << "Patch[" << *vi << "]-Distance: " << distvector[*vi] << ", ";
+            }
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
         
     }
 }

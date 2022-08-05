@@ -7,6 +7,83 @@
 
 #include "Patch.hpp"
 
+#include "disjointsets.hpp"
+
+
+static PyObject* label_grid(PyObject* self, PyObject* args) {
+    PyObject* argGrid;
+    if (!PyArg_ParseTuple(args, "O", &argGrid)) {
+        return NULL;
+    }
+
+    PyArrayObject* levels = (PyArrayObject*) PyArray_FROM_OTF(argGrid, NPY_INT, NPY_ARRAY_IN_ARRAY);
+    if (levels == NULL) {
+        return NULL;
+    }
+
+    int ndims = PyArray_NDIM(levels);
+    npy_intp* dims = PyArray_DIMS(levels);
+    int width = dims[0];
+    int height = dims[1];
+
+    PyArrayObject* labels = (PyArrayObject*) PyArray_SimpleNew(ndims, dims, NPY_INT);
+
+
+    // Compute Patch sets
+    DisjointSets ds(levels, labels);
+
+    for (int j = 0; j < height; j++) {
+        for (int i = 0; i < width; i++) {
+            int h = Get2D(levels, i, j);
+            bool connectLeft = false;
+            bool connectTop = false;
+
+            if (h == 0) {
+                *Ptr2D(labels, i, j) = 0;
+                continue;
+            }
+
+            // Check if left neighbor is at the same height
+            if (i > 0) {
+                int leftHeight = Get2D(levels, i - 1, j);
+                connectLeft = leftHeight == h;
+            }
+            // Check if top neighbor is at the same height
+            if (j > 0) {
+                int topHeight = Get2D(levels, i, j - 1);
+                connectTop = topHeight == h;
+            }
+
+            PatchID id;
+            if (connectLeft && connectTop) {
+                PatchID leftId = Get2D(ds.labels, i - 1, j);
+                PatchID topId = Get2D(ds.labels, i, j - 1);
+                id = ds.union_patches(leftId, topId);
+            }
+            else if (connectLeft) {
+                id = Get2D(ds.labels, i - 1, j);
+            }
+            else if (connectTop) {
+                id = Get2D(ds.labels, i, j - 1);
+            }
+            else {
+                id = ds.make_patch(i, j, h);
+            }
+
+            *Ptr2D(ds.labels, i, j) = id;
+        }
+    }
+
+    for (int i = 0; i < width; i++) {
+        for (int j = 0; j < height; j++) {
+            int* ptr = Ptr2D(labels, i, j);
+            *ptr = ds.parent_of(*ptr);
+        }
+    }
+
+    return PyArray_Return(labels);
+}
+
 
 static PyObject* vector_test(PyObject* self, PyObject* args) {
     PyObject* argGrid;
@@ -24,9 +101,6 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     int ndims = PyArray_NDIM(arrayGrid);
     npy_intp* dims = PyArray_DIMS(arrayGrid);
     int ddims[] = {dims[0], dims[1]};
-
-    int* dataGrid = (int*) PyArray_DATA(arrayGrid);
-    int* dataLabels = (int*) PyArray_DATA(arrayLabels);
 
     create_patches(arrayLabels, arrayGrid, ddims);
 
@@ -143,6 +217,7 @@ fail:
 }
 
 static PyMethodDef treesegMethods[] = {
+    {"label_grid", label_grid, METH_VARARGS, "Label contiguous patches"},
     {"sample_grid", sample_grid, METH_VARARGS, "Sample some elements on a 2d grid"},
     {"vector_test", vector_test, METH_VARARGS, "Neighbors on neighbors"},
     // {"array_sum", array_sum, METH_VARARGS, "Sums all the elements of the given array."},

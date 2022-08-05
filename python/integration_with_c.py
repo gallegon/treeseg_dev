@@ -25,24 +25,31 @@ def handle_vector_test(grid, labeled_grid):
     print(labeled_grid)
     print()
 
-import cv2
 
 def handle_label_patches(grid):
-    image = grid.astype(np.uint8)
-    labeled_grid = np.ndarray(grid.shape, dtype=np.uint8)
-    connectivity = 4
-    num_labels, labels = cv2.connectedComponents(image, labeled_grid, connectivity)
+    labeled_grid = ts.label_grid(grid).astype("int")
 
-    # print(f"{num_labels=}")
-    # print(f"Labels:")
-    # print(f"{labels}")
-    # print(f"labeled_grid:")
-    # print(f"{labeled_grid}")
+    print("== Labeled Grid")
+    print(labeled_grid)
+    
+    return {
+        "labeled_grid": labeled_grid
+    }
 
-    # return {
-    #     "labeled_grid":
-    # }
-
+py_pipeline = Pipeline(verbose=True) \
+    .then(handle_create_file_names_and_paths) \
+    .then(handle_read_las_data) \
+    .then(handle_las2img) \
+    .then(handle_gaussian_filter) \
+    .then(handle_grid_height_cutoff) \
+    .then(handle_save_grid_raster) \
+    \
+    .then(handle_compute_patches) \
+    .then(handle_compute_patches_labeled_grid) \
+    .then(handle_compute_patch_neighbors) \
+    .then(handle_save_patches_raster) \
+    \
+    .then(handle_vector_test)
 
 
 c_pipeline = Pipeline(verbose=True) \
@@ -53,13 +60,9 @@ c_pipeline = Pipeline(verbose=True) \
     .then(handle_grid_height_cutoff) \
     .then(handle_save_grid_raster) \
     \
-    .then(handle_c_stage) \
+    .then(handle_label_patches) \
     \
-    .then(handle_compute_patches) \
-    .then(handle_patches_to_dict) \
-    .then(handle_compute_patches_labeled_grid) \
+    .then(handle_save_patches_raster) \
     \
-    .then(handle_vector_test) \
-    \
-    .then(handle_save_patches_raster)
+    .then(handle_vector_test)
 

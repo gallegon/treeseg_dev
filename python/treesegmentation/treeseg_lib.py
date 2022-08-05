@@ -354,9 +354,9 @@ def handle_save_patches_raster(input_file_name, output_folder_path, labeled_grid
         return
 
     labels = labeled_grid.transpose()
-    r = ((labels * 7) % 256).astype("uint8")
-    g = ((labels * 13) % 256).astype("uint8")
-    b = ((labels * 23) % 256).astype("uint8")
+    r = ((labels * 6833) % 256).astype("uint8")
+    g = ((labels * 2293) % 256).astype("uint8")
+    b = ((labels * 7177) % 256).astype("uint8")
     image_color = np.dstack((r, g, b))
     img = Image.fromarray(image_color, "RGB")
 

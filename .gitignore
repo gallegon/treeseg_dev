@@ -8,3 +8,4 @@ python/treesegmentation/__pycache__
 python/treesegmentation_output
 
 python/sample_data/ept*
+python/sample_data/VernonLA_306_nno.las

@@ -8,7 +8,7 @@ import sys
 
 from treesegmentation.treeseg_lib import *
 
-from integration_with_c import c_pipeline
+from integration_with_c import c_pipeline, py_pipeline
 
 
 def run_treesegmentation(initial_context):

@@ -1,5 +1,5 @@
 {
-    "input_file_path": "sample_data/hard_nno.las",
+    "input_file_path": "sample_data/VernonLA_306_nno.las",
 
     "resolution": 0.5,
     "discretization": 256,
