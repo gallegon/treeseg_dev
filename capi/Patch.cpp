@@ -64,6 +64,23 @@ int Patch::get_level() {
     return (this->level);
 }
 
+int Patch::getCellCount() {
+    return (this->cell_count);
+}
+
+std::pair<double, double> Patch::getCentroid() {
+    return (this->centroid);
+}
+void Patch::operator=(const Patch& patch) {
+    this->id = patch.id;
+    this->level = patch.level;
+    this->cells = patch.cells;
+    this->associated_hierarchies = patch.associated_hierarchies;
+    this->centroid = patch.centroid;
+    this->sum_x = patch.sum_x;
+    this->sum_y = patch.sum_y;
+    this->cell_count = patch.cell_count;
+}
 void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neighbor_j, int n,int current_id,
                         int current_level, PyArrayObject* labels,
                         PyArrayObject* levels) {
@@ -231,6 +248,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
         boost::add_edge(parent, child, 1, context.graph);
     }
 
+    // Moved to Hierarchy
     /*
     context.patches = patches;
     context.parentless_patches = parentless_patches;
