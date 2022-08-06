@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.distutils.core import setup, Extension
 
-treeseg_module = Extension('treeseg', sources=['treeseg.cpp', 'Patch.cpp', "disjointsets.cpp"],
+treeseg_module = Extension('treeseg', sources=['treeseg.cpp', 'Patch.cpp', "disjointsets.cpp", 'Hierarchy.cpp'],
                         include_dirs=[
                             np.get_include(),
                             #"C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL\include",
