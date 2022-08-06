@@ -8,7 +8,7 @@ treeseg_module = Extension('treeseg', sources=['treeseg.cpp', 'Patch.cpp', "disj
                             #"C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL",
                             "libs"
                         ],
-                        extra_compile_arms=[
+                        extra_compile_args=[
                             "std=c++11"
                         ],
                         language="c++11")
