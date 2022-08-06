@@ -1,13 +1,14 @@
 #!/bin/bash
 
-CC="g++"
+export CC="gcc"
+export CXX="g++"
 
-if python setup.py build then
+if python setup.py build; then
     echo
     echo == Successfully compiled module
     echo
 
-    if python setup.py install then
+    if python setup.py install; then
         echo
         echo == Successfully deployed module
         echo

@@ -90,7 +90,7 @@ void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neigh
 
     // if the id of the feature is different the the current id, we know that
     // two patches are connected.
-    if (neighbor_id != current_id) {
+    if (neighbor_id != current_id && neighbor_level != 0) {
         if (neighbor_level > current_level) {
             // set the direction flag towards the higher neighbor
             neighbor_id = neighbor_id * -1;

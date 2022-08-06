@@ -158,6 +158,10 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
         int vertex_id = it->first;
 
+        if (vertex_id < 0 || vertex_id > pdagContext.patches.size() - 1) {
+            std::cout << "WORKING WITH VERTEX: " << vertex_id << std::endl;
+        }
+
         // Create a new Hierarchy object for each of the parentless nodes
         hierarchy_level = (pdagContext.patches.at(vertex_id)).get_level();
         (pdagContext.patches.at(vertex_id)).add_hierarchy(hierarchy_id, hierarchyContext.connected_hierarchies);
@@ -187,7 +191,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
                 auto this_patch = pdagContext.patches.find((int)*vi);
                 if (this_patch == pdagContext.patches.end()) {
-                    // std::cout << "Patch not found: " << this_patch->second.get_id() << std::endl;
+                    std::cout << "Patch not found: " << this_patch->second.get_id() <<  " || " << (int) *vi << std::endl;
                     continue;
                 }
                 levelDepth = hierarchy_level - this_patch->second.get_level();
