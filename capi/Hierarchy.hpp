@@ -8,14 +8,20 @@ class Hierarchy {
 private:
     int id;
     int height;
+    int cellCount;
     std::map<int, Patch> patches;
     std::vector<int> patchIDs;
     std::pair<double, double> heightAdjustedCentroid;
+    std::map<int, std::pair<int, int>> patchDepthMap;
+
 public:
     Hierarchy(int, int);
-    void add_patch(int, Patch);
-    void add_patchID(int);
+    void add_patch(int, Patch, std::pair<int, int>);
+    void add_patchID(int, std::pair<int, int>);
     std::vector<int> getPatchIDs();
+    std::pair<int, int> getPatchDepths(int patchID);
+    void setHAC(double, double);
+    void setCellCount(int);
 };
 
 struct HierarchyData {

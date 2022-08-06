@@ -39,6 +39,9 @@ public:
     void update_centroid();
     void add_hierarchy(int, std::set<std::pair<int, int>>&);
     int get_level();
+    int getCellCount();
+    std::pair<double, double> getCentroid();
+    void operator = (const Patch&);
 };
 
 // This is a struct that will be used to pass data to the Hierarchy step
