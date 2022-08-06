@@ -12,7 +12,7 @@ private:
     std::map<int, Patch> patches;
     std::vector<int> patchIDs;
     std::pair<double, double> heightAdjustedCentroid;
-    std::map<int, std::pair<int, int>> patchDepthMap;
+    std::map<int, std::pair<int, int> > patchDepthMap;
 
 public:
     Hierarchy(int, int);
@@ -26,7 +26,7 @@ public:
 
 struct HierarchyData {
     std::map<int, Hierarchy> hierarchies;
-    std::set<std::pair<int, int>> connected_hierarchies;
+    std::set<std::pair<int, int> > connected_hierarchies;
 };
 
 void compute_hierarchies(struct PdagData&, struct HierarchyData&);
