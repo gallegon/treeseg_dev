@@ -7,20 +7,6 @@
 
 typedef int PatchID;
 
-
-struct Cell {
-    int x;
-    int y;
-};
-
-
-class PatchNode {
-public:
-    PatchID id;
-    int height;
-};
-
-
 class DisjointSets {
 private:
     PatchID ID_NEXT = 1;
@@ -28,7 +14,6 @@ private:
 public:
     PyArrayObject* levels;
     PyArrayObject* labels;
-    std::map<PatchID, PatchNode> nodes;
     std::map<PatchID, PatchID> parents;
 
     DisjointSets(PyArrayObject* levels, PyArrayObject* labels);
