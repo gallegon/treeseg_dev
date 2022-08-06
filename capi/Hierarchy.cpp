@@ -187,7 +187,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
                 auto this_patch = pdagContext.patches.find((int)*vi);
                 if (this_patch == pdagContext.patches.end()) {
-                    std::cout << "Patch not found: " << this_patch->second.get_id() << std::endl;
+                    // std::cout << "Patch not found: " << this_patch->second.get_id() << std::endl;
                     continue;
                 }
                 levelDepth = hierarchy_level - this_patch->second.get_level();
