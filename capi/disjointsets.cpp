@@ -10,12 +10,10 @@ DisjointSets::DisjointSets(PyArrayObject* levels, PyArrayObject* labels) {
 }
 
 PatchID DisjointSets::make_patch(int x, int y, int height) {
-    PatchNode patch;
-    patch.id = ID_NEXT++;
-    patch.height = height;
-    parents[patch.id] = patch.id;
+    PatchID id = ID_NEXT++;
+    parents[id] = id;
     // *Ptr2D(labels, x, y) = patch.id;
-    return patch.id;
+    return id;
 }
 
 PatchID DisjointSets::union_patches(PatchID a, PatchID b) {
