@@ -42,6 +42,8 @@ public:
     int getCellCount();
     std::pair<double, double> getCentroid();
     void operator = (const Patch&);
+
+    int get_id() { return id; }
 };
 
 // This is a struct that will be used to pass data to the Hierarchy step

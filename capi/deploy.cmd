@@ -1,18 +1,21 @@
 @ECHO OFF
 
-python setup.py build
+call python setup.py build
 
-echo Error level %errorLevel%
-
-if errorLevel 0 (
+if %ERRORLEVEL% == 0 (
     echo.
     echo == Successfully compiled module
     echo.
 
-    python setup.py install
-    if errorLevel 0 (
+    call python setup.py install
+
+    if %ERRORLEVEL% == 0 (
         echo.
         echo == Successfully deployed module
+        echo.
+    ) else (
+        echo.
+        echo == Failed to deploy module
         echo.
     )
 ) else (

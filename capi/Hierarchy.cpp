@@ -153,6 +153,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
     for (it = pdagContext.parentless_patches.begin(); it != pdagContext.parentless_patches.end(); ++it) {
 
         int vertex_id = it->first;
@@ -170,7 +171,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         dijkstra_shortest_paths(pdagContext.graph, s,
             predecessor_map(predmap)
             .distance_map(distmap_vect));
-
+        
         // -- Reachable patches
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(pdagContext.graph); vi != vend; ++vi) {
@@ -183,7 +184,13 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
                 See section 2.2.4. Weighted Graph of "The Paper" 
                 */
-                levelDepth = hierarchy_level - pdagContext.patches.at((int)*vi).get_level();
+
+                auto this_patch = pdagContext.patches.find((int)*vi);
+                if (this_patch == pdagContext.patches.end()) {
+                    std::cout << "Patch not found: " << this_patch->second.get_id() << std::endl;
+                    continue;
+                }
+                levelDepth = hierarchy_level - this_patch->second.get_level();
                 nodeDepth = (int)distvector[*vi];
                 h.add_patchID((int) *vi, std::make_pair(levelDepth, nodeDepth));
                 total_reachable += 1;

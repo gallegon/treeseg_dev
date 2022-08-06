@@ -9,7 +9,7 @@ treeseg_module = Extension('treeseg', sources=['treeseg.cpp', 'Patch.cpp', "disj
                             "libs"
                         ],
                         extra_compile_args=[
-                            "-std=c++11"
+                            # "-std=c++11"
                         ],
                         language="c++11")
 # TODO: figure out which libraries to use here.  Ask Mr. Sam Foltz what the

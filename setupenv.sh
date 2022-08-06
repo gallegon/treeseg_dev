@@ -1,5 +1,7 @@
 #!/bin/bash
 
-conda create -n treeseg_dev
+ENV_NAME="treeseg_dev"
 
-conda env update -n treeseg_dev -f environment.yaml
+conda create -n $ENV_NAME
+
+conda env update -n $ENV_NAME -f environment.yaml
