@@ -7,7 +7,11 @@ treeseg_module = Extension('treeseg', sources=['treeseg.cpp', 'Patch.cpp', "disj
                             #"C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL\include",
                             #"C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL",
                             "libs"
-                        ])
+                        ],
+                        extra_compile_arms=[
+                            "std=c++11"
+                        ],
+                        language="c++11")
 # TODO: figure out which libraries to use here.  Ask Mr. Sam Foltz what the
 # fuck is going on.  He usually has the answers.
 """
