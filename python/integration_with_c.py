@@ -13,9 +13,14 @@ def handle_c_stage(grid):
     # return { "grid": sample }
 
 
-def handle_vector_test(grid, labeled_grid):
+def handle_vector_test(grid, labeled_grid, weight_level_depth,
+                                 weight_node_depth, weight_shared_ratio,
+                                 weight_top_distance, weight_centroid_distance, weight_threshold):
     print("Vector test begin!")
-    ts.vector_test(grid, labeled_grid)
+
+    weight_params = [weight_level_depth, weight_node_depth, weight_shared_ratio, weight_top_distance, weight_centroid_distance, weight_threshold]
+    ts.vector_test(grid, labeled_grid, weight_params)
+    
     print("Vector test end!")
 
     print("== Grid")

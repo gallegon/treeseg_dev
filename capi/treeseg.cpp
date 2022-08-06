@@ -95,18 +95,20 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
 static PyObject* vector_test(PyObject* self, PyObject* args) {
     PyObject* argGrid;
     PyObject* argLabels;
+    PyObject* argWeights;
 
     // Used to get data from the patch creation step
     struct PdagData pdag;
     struct HierarchyData hierarchyContext;
 
-    if (!PyArg_ParseTuple(args, "OO", &argGrid, &argLabels)) {
+    if (!PyArg_ParseTuple(args, "OOO", &argGrid, &argLabels, &argWeights)) {
         return NULL;
     }
 
     PyArrayObject* arrayGrid = (PyArrayObject*) PyArray_FROM_OTF(argGrid, NPY_INT, NPY_ARRAY_IN_ARRAY);
     PyArrayObject* arrayLabels = (PyArrayObject*) PyArray_FROM_OTF(argLabels, NPY_INT, NPY_ARRAY_IN_ARRAY);
-    if (arrayGrid == NULL || arrayLabels == NULL) {
+    PyArrayObject* arrayParams = (PyArrayObject*) PyArray_FROM_OTF(argWeights, NPY_FLOAT, NPY_ARRAY_IN_ARRAY);
+    if (arrayGrid == NULL || arrayLabels == NULL || arrayParams == NULL) {
         return NULL;
     }
 
