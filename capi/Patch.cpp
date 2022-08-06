@@ -41,14 +41,14 @@ void Patch::update_centroid() {
 }
 
 void Patch::print_cells() {
-    std::vector<std::pair<int, int>>::iterator it;
+    std::vector<std::pair<int, int> >::iterator it;
     for (it = this->cells.begin(); it != this->cells.end(); ++it) {
         std::cout << " (" << it->first << ", " << it->second << ") ";
     }
 }
 
 // This is used for keeping track of which hierarchies are connected.
-void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int>>& connected_hierarchies) {
+void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int> >& connected_hierarchies) {
     std::vector<int>::iterator it;
     for (it = this->associated_hierarchies.begin(); it != this->associated_hierarchies.end(); ++it) {
         if (hierarchy_id > *it) {
@@ -171,8 +171,8 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     // int* labelsData = (int*) PyArray_DATA(labels);
 
     // This is an edge list of what will ultimately become the PDAG
-    std::set<std::pair<int, int>> connected_patches;
-    std::set<std::pair<int, int>>::iterator set_iter;
+    std::set<std::pair<int, int> > connected_patches;
+    std::set<std::pair<int, int> >::iterator set_iter;
 
 
     int m = dimensions[0];
