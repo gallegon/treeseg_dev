@@ -52,8 +52,8 @@ namespace boost
 // An implementation of disjoint sets can be found in
 // boost/pending/disjoint_sets.hpp
 
-template < class EdgeListGraph, class DisjointSets >
-void incremental_components(EdgeListGraph& g, DisjointSets& ds)
+template < class EdgeListGraph, class DisjointPatches >
+void incremental_components(EdgeListGraph& g, DisjointPatches& ds)
 {
     typename graph_traits< EdgeListGraph >::edge_iterator e, end;
     for (boost::tie(e, end) = edges(g); e != end; ++e)
@@ -89,8 +89,8 @@ void normalize_components(ParentIterator first, ParentIterator last)
         detail::normalize_node(first, current - first);
 }
 
-template < class VertexListGraph, class DisjointSets >
-void initialize_incremental_components(VertexListGraph& G, DisjointSets& ds)
+template < class VertexListGraph, class DisjointPatches >
+void initialize_incremental_components(VertexListGraph& G, DisjointPatches& ds)
 {
     typename graph_traits< VertexListGraph >::vertex_iterator v, vend;
     for (boost::tie(v, vend) = vertices(G); v != vend; ++v)

@@ -67,30 +67,30 @@ namespace detail {
    * sets data structure. Used to indicate when an edge is now a
    * self-loop because of supervertex merging in Boruvka's algorithm.
    */
-  template<typename DisjointSets, typename Graph>
+  template<typename DisjointPatches, typename Graph>
   class do_has_same_supervertex
   {
   public:
     typedef typename graph_traits<Graph>::edge_descriptor edge_descriptor;
 
-    do_has_same_supervertex(DisjointSets& dset, const Graph& g)
+    do_has_same_supervertex(DisjointPatches& dset, const Graph& g)
       : dset(dset), g(g) { }
 
     bool operator()(edge_descriptor e)
     { return dset.find_set(source(e, g)) == dset.find_set(target(e, g));    }
 
   private:
-    DisjointSets&  dset;
+    DisjointPatches&  dset;
     const Graph&   g;
   };
 
   /**
    * Build a @ref do_has_same_supervertex object.
    */
-  template<typename DisjointSets, typename Graph>
-  inline do_has_same_supervertex<DisjointSets, Graph>
-  has_same_supervertex(DisjointSets& dset, const Graph& g)
-  { return do_has_same_supervertex<DisjointSets, Graph>(dset, g); }
+  template<typename DisjointPatches, typename Graph>
+  inline do_has_same_supervertex<DisjointPatches, Graph>
+  has_same_supervertex(DisjointPatches& dset, const Graph& g)
+  { return do_has_same_supervertex<DisjointPatches, Graph>(dset, g); }
 
   /** \brief A single distributed Boruvka merge step.
    *
@@ -278,7 +278,7 @@ namespace detail {
    * using the given disjoint sets data structure to identify
    * supervertex representatives.
    */
-  template<typename Graph, typename DisjointSets>
+  template<typename Graph, typename DisjointPatches>
   struct build_supervertex_edge_descriptor
   {
     typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
@@ -289,7 +289,7 @@ namespace detail {
 
     build_supervertex_edge_descriptor() : g(0), dsets(0) { }
 
-    build_supervertex_edge_descriptor(const Graph& g, DisjointSets& dsets)
+    build_supervertex_edge_descriptor(const Graph& g, DisjointPatches& dsets)
       : g(&g), dsets(&dsets) { }
 
     result_type operator()(argument_type e) const
@@ -303,13 +303,13 @@ namespace detail {
 
   private:
     const Graph* g;
-    DisjointSets* dsets;
+    DisjointPatches* dsets;
   };
 
-  template<typename Graph, typename DisjointSets>
-  inline build_supervertex_edge_descriptor<Graph, DisjointSets>
-  make_supervertex_edge_descriptor(const Graph& g, DisjointSets& dsets)
-  { return build_supervertex_edge_descriptor<Graph, DisjointSets>(g, dsets); }
+  template<typename Graph, typename DisjointPatches>
+  inline build_supervertex_edge_descriptor<Graph, DisjointPatches>
+  make_supervertex_edge_descriptor(const Graph& g, DisjointPatches& dsets)
+  { return build_supervertex_edge_descriptor<Graph, DisjointPatches>(g, dsets); }
 
   template<typename T>
   struct identity_function
@@ -320,14 +320,14 @@ namespace detail {
     result_type operator()(argument_type x) const { return x; }
   };
 
-  template<typename Graph, typename DisjointSets, typename EdgeMapper>
+  template<typename Graph, typename DisjointPatches, typename EdgeMapper>
   class is_not_msf_edge
   {
     typedef typename graph_traits<Graph>::vertex_descriptor Vertex;
     typedef typename graph_traits<Graph>::edge_descriptor Edge;
 
   public:
-    is_not_msf_edge(const Graph& g, DisjointSets dset, EdgeMapper edge_mapper)
+    is_not_msf_edge(const Graph& g, DisjointPatches dset, EdgeMapper edge_mapper)
       : g(g), dset(dset), edge_mapper(edge_mapper) { }
 
     bool operator()(Edge e)
@@ -343,7 +343,7 @@ namespace detail {
 
   private:
     const Graph& g;
-    DisjointSets dset;
+    DisjointPatches dset;
     EdgeMapper edge_mapper;
   };
 
