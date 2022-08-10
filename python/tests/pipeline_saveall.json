@@ -1,5 +1,5 @@
 {
-    "input_file_path": "sample_data/hard_nno.las",
+    "input_file_path": "sample_data/test_output.las",
 
     "resolution": 1,
     "discretization": 16,

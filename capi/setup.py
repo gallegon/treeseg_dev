@@ -1,31 +1,36 @@
 import numpy as np
 from numpy.distutils.core import setup, Extension
 
-treeseg_module = Extension('treeseg', sources=['treeseg.cpp', 'Patch.cpp', "disjointpatches.cpp", 'Hierarchy.cpp'],
-                        include_dirs=[
-                            np.get_include(),
-                            #"C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL\include",
-                            #"C:\\Users\\Sam\\Desktop\\pdalbuilding\\PDAL",
-                            "libs"
-                        ],
-                        extra_compile_args=[
-                            # "-std=c++11"
-                        ],
-                        language="c++11")
-# TODO: figure out which libraries to use here.  Ask Mr. Sam Foltz what the
-# fuck is going on.  He usually has the answers.
-"""
-                        ,
-                        library_dirs=[
-                            "C:\\Users\\Sam\\anaconda3\\envs\\treeseg_dev\\Library\\lib"
-                        ],
-                        libraries=[
-                            "pdalcpp",
-                            "pdal_util"
-                        ])
-"""
+treeseg_module = Extension("treeseg",
+                    # All .cpp source files to be compiled.
+                    sources = [
+                        "treeseg.cpp",
+                        "Patch.cpp",
+                        "disjointpatches.cpp",
+                        "pdalfilter.cpp",
+                        "Hierarchy.cpp"
+                    ],
+                    # Directories to any .hpp header files to be included.
+                    include_dirs = [
+                        np.get_include(),
+                        "C:\\Users\\Sam\\Desktop\\projects\\pdalbuilding\\PDAL\\include",
+                        "C:\\Users\\Sam\\Desktop\\projects\\pdalbuilding\\PDAL",
+                        "libs"
+                    ],
+                    # -std=c++11
+                    language = "c++11",
+                    # Directories to any .lib library files.
+                    library_dirs = [
+                        "C:\\Users\\Sam\\anaconda3\\envs\\treeseg_dev\\Library\\lib"
+                    ],
+                    # Specific libraries to be linked against (from directories in library_dirs).
+                    libraries = [
+                        "pdalcpp",
+                        "pdal_util"
+                    ])
 
-setup(name = 'treeseg',
-        version='1.0',
-        description='Tree segmentation in C!',
-        ext_modules = [treeseg_module])
+
+setup(name = "treeseg",
+    version = "1.0",
+    description = "Tree segmentation in C!",
+    ext_modules = [treeseg_module])

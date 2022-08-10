@@ -9,7 +9,68 @@
 #include "Patch.hpp"
 #include "Hierarchy.hpp"
 #include "disjointpatches.hpp"
+#include "pdalfilter.hpp"
 
+
+
+
+static PyObject* label_las(PyObject* self, PyObject* args) {
+    char* filename;
+    PyObject* argGrid;
+    if (!PyArg_ParseTuple(args, "sO", &filename, &argGrid)) {
+        return NULL;
+    }
+
+    PyArrayObject* grid = (PyArrayObject*) PyArray_FROM_OTF(argGrid, NPY_INT, NPY_ARRAY_IN_ARRAY);
+    if (grid == NULL) {
+        return NULL;
+    }
+
+    int width = PyArray_DIM(grid, 0);
+    int height = PyArray_DIM(grid, 1);
+
+    using namespace pdal;
+
+    StageFactory factory;
+
+    // Create stages
+    Stage* reader = factory.createStage("readers.las");
+    Stage* filter = factory.createStage("filters.customfilter");
+    Stage* writer = factory.createStage("writers.las");
+
+    std::cout << "Created stages" << std::endl;
+    
+    // Construct the pipeline
+    filter->setInput(*reader);
+    writer->setInput(*filter);
+
+    Options options;
+    options.add("filename", filename);
+    reader->setOptions(options);
+
+    Options optWriter;
+    optWriter.add("filename", "test_output.las");
+    // Adds the header, scale, offset, and vlr from the input .las file to the output .las file.
+    optWriter.add("forward", "all");
+    writer->setOptions(optWriter);
+
+    PointTable table;
+    table.layout()->registerDim(Dimension::Id::X);
+    table.layout()->registerDim(Dimension::Id::Y);
+    table.layout()->registerDim(Dimension::Id::Z);
+
+    std::cout << "Registered dims" << std::endl;
+
+    writer->prepare(table);
+
+    std::cout << "Prepared table; executing PDAL pipeline" << std::endl;
+
+    writer->execute(table);
+
+    std::cout << "Finished las_label" << std::endl;
+
+    Py_RETURN_NONE;
+}
 
 static PyObject* label_grid(PyObject* self, PyObject* args) {
     PyObject* argGrid;
@@ -74,6 +135,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef treesegMethods[] = {
+    {"label_las", label_las, METH_VARARGS, "Label .las files by overlaying a 2d grid of ids, top-down on the points."},
     {"label_grid", label_grid, METH_VARARGS, "Label contiguous patches"},
     {"vector_test", vector_test, METH_VARARGS, "Neighbors on neighbors"},
     {NULL, NULL, NULL, NULL}

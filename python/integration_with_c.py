@@ -41,6 +41,10 @@ def handle_label_patches(grid):
         "labeled_grid": labeled_grid
     }
 
+def handle_label_las(input_file_path, grid):
+    ts.label_las(input_file_path, grid)
+    
+
 py_pipeline = Pipeline(verbose=True) \
     .then(handle_create_file_names_and_paths) \
     .then(handle_read_las_data) \
@@ -67,7 +71,9 @@ c_pipeline = Pipeline(verbose=True) \
     \
     .then(handle_label_patches) \
     \
-    .then(handle_save_patches_raster) \
+    .then(handle_label_las) \
     \
-    .then(handle_vector_test)
+    .then(handle_save_patches_raster) \
+    # \
+    # .then(handle_vector_test)
 
