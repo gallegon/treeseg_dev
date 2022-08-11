@@ -1,5 +1,9 @@
 @ECHO OFF
 
+pushd "%~dp0"\..\capi
+
+call conda activate treeseg_dev
+
 call python setup.py build
 
 if %ERRORLEVEL% == 0 (
@@ -23,3 +27,5 @@ if %ERRORLEVEL% == 0 (
     echo == Compilation failed
     echo.
 )
+
+popd
