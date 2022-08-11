@@ -1,6 +1,8 @@
 #pragma once
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#define NO_IMPORT_ARRAY
+#define PY_ARRAY_UNIQUE_SYMBOL treeseg_ARRAY_API
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
 #include <math.h>

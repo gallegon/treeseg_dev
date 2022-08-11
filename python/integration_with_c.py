@@ -1,6 +1,7 @@
 from treesegmentation.treeseg_lib import *
 
 import treeseg as ts
+import os
 
 
 def handle_c_stage(grid):
@@ -41,8 +42,16 @@ def handle_label_patches(grid):
         "labeled_grid": labeled_grid
     }
 
-def handle_label_las(input_file_path, grid):
-    ts.label_las(input_file_path, grid)
+def handle_label_las(input_file_path, output_folder_path, grid):
+    output_file_path = os.path.join(output_folder_path, "test_output.las")
+    ts.label_las(input_file_path, output_file_path, grid)
+
+def handle_discretize_points(input_file_path, resolution, discretization):
+    grid = ts.discretize_points(input_file_path, resolution, discretization)
+    
+    return {
+        "grid": grid
+    }
     
 
 py_pipeline = Pipeline(verbose=True) \
@@ -54,26 +63,25 @@ py_pipeline = Pipeline(verbose=True) \
     .then(handle_save_grid_raster) \
     \
     .then(handle_compute_patches) \
+    .then(handle_patches_to_dict) \
     .then(handle_compute_patches_labeled_grid) \
     .then(handle_compute_patch_neighbors) \
     .then(handle_save_patches_raster) \
-    \
-    .then(handle_vector_test)
+    .then(handle_compute_hierarchies) \
+    # .then(handle_find_connected_hierarchies)
 
 
 c_pipeline = Pipeline(verbose=True) \
     .then(handle_create_file_names_and_paths) \
-    .then(handle_read_las_data) \
-    .then(handle_las2img) \
+    .then(handle_discretize_points) \
+    \
     .then(handle_gaussian_filter) \
     .then(handle_grid_height_cutoff) \
     .then(handle_save_grid_raster) \
     \
     .then(handle_label_patches) \
     \
-    .then(handle_label_las) \
-    \
     .then(handle_save_patches_raster) \
-    # \
-    # .then(handle_vector_test)
+    \
+    .then(handle_vector_test)
 

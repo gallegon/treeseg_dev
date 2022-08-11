@@ -1,9 +1,9 @@
 {
-    "input_file_path": "sample_data/test_output.las",
+    "input_file_path": "sample_data/hard_nno.las",
 
-    "resolution": 1,
-    "discretization": 16,
-    "min_height": 4,
+    "resolution": 0.5,
+    "discretization": 256,
+    "min_height": 64,
     "gaussian_sigma": 0.4,
 
     "weight_level_depth": 0.22,

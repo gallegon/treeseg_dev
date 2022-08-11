@@ -139,8 +139,9 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
     // Some debug/trace variables.
     int count = 0;
     int total_count = pdagContext.parentless_patches.size() - 1;
-    int one_percent_amount = floor(total_count * 0.01);
-    int next_count = one_percent_amount;
+    // int one_percent_amount = floor(total_count * 0.01);
+    int percent_step = ceil(total_count * 0.05);
+    int next_count = percent_step;
     int total_reachable = 0;
 
     // These are for hierarchy creation
@@ -227,7 +228,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
             std::cout << "Patch ID: " << vertex_id << " :: " << (count + 1) << "/" << pdagContext.parentless_patches.size() << " = " << p << "%" << std::endl;
             auto step_time = (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin).count()) / 1000000.0;
             std::cout << "    -- Time since last update (seconds): " << step_time << std::endl;
-            next_count += one_percent_amount;
+            next_count += percent_step;
             begin = std::chrono::steady_clock::now();
         }
         count += 1;

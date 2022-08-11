@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#define PY_ARRAY_UNIQUE_SYMBOL treeseg_ARRAY_API
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
 #include <math.h>
@@ -14,62 +15,51 @@
 
 
 
-static PyObject* label_las(PyObject* self, PyObject* args) {
-    char* filename;
-    PyObject* argGrid;
-    if (!PyArg_ParseTuple(args, "sO", &filename, &argGrid)) {
+static PyObject* discretize_points(PyObject* self, PyObject* args) {
+    char* filepath_in;
+    double resolution;
+    int discretization;
+    if (!PyArg_ParseTuple(args, "sdi", &filepath_in, &resolution, &discretization)) {
         return NULL;
     }
-
-    PyArrayObject* grid = (PyArrayObject*) PyArray_FROM_OTF(argGrid, NPY_INT, NPY_ARRAY_IN_ARRAY);
-    if (grid == NULL) {
-        return NULL;
-    }
-
-    int width = PyArray_DIM(grid, 0);
-    int height = PyArray_DIM(grid, 1);
 
     using namespace pdal;
+
+    // PointTable holds all of the points, allows accessing points (read/write).
+    PointTable table;
+    // Register the "default" dimensions we care about.
+    table.layout()->registerDim(Dimension::Id::X);
+    table.layout()->registerDim(Dimension::Id::Y);
+    table.layout()->registerDim(Dimension::Id::Z);
+    // Create and register a new dimension "TreeID" of type uint64.
+    // table.layout()->assignDim("TreeID", Dimension::Type::Unsigned64);
 
     StageFactory factory;
 
     // Create stages
     Stage* reader = factory.createStage("readers.las");
-    Stage* filter = factory.createStage("filters.customfilter");
+    CustomFilter* filter = dynamic_cast<CustomFilter*>(factory.createStage("filters.customfilter"));
     Stage* writer = factory.createStage("writers.las");
 
     std::cout << "Created stages" << std::endl;
-    
-    // Construct the pipeline
-    filter->setInput(*reader);
-    writer->setInput(*filter);
 
     Options options;
-    options.add("filename", filename);
+    options.add("filename", filepath_in);
     reader->setOptions(options);
 
-    Options optWriter;
-    optWriter.add("filename", "test_output.las");
-    // Adds the header, scale, offset, and vlr from the input .las file to the output .las file.
-    optWriter.add("forward", "all");
-    writer->setOptions(optWriter);
+    std::cout << "-- Running pipeline..." << std::endl;
+    
+    filter->withResolution(resolution);
+    filter->withDiscretization(discretization);
+    filter->withReader(*reader);
+    filter->setInput(*reader);
+    filter->prepare(table);
+    filter->execute(table);
 
-    PointTable table;
-    table.layout()->registerDim(Dimension::Id::X);
-    table.layout()->registerDim(Dimension::Id::Y);
-    table.layout()->registerDim(Dimension::Id::Z);
+    std::cout << "-- Finished running reader & filter" << std::endl;
 
-    std::cout << "Registered dims" << std::endl;
-
-    writer->prepare(table);
-
-    std::cout << "Prepared table; executing PDAL pipeline" << std::endl;
-
-    writer->execute(table);
-
-    std::cout << "Finished las_label" << std::endl;
-
-    Py_RETURN_NONE;
+    PyArrayObject* discretized_grid = filter->getGrid();
+    return PyArray_Return(discretized_grid);
 }
 
 static PyObject* label_grid(PyObject* self, PyObject* args) {
@@ -135,7 +125,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef treesegMethods[] = {
-    {"label_las", label_las, METH_VARARGS, "Label .las files by overlaying a 2d grid of ids, top-down on the points."},
+    {"discretize_points", discretize_points, METH_VARARGS, "Discretize a set of points into a 2d grid."},
     {"label_grid", label_grid, METH_VARARGS, "Label contiguous patches"},
     {"vector_test", vector_test, METH_VARARGS, "Neighbors on neighbors"},
     {NULL, NULL, NULL, NULL}
