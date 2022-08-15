@@ -121,7 +121,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     create_patches(arrayLabels, arrayGrid, ddims, pdag);
     compute_hierarchies(pdag, hierarchyContext);
-    calculateHAC(pdag, hierarchyContext);
+    //calculateHAC(pdag, hierarchyContext);
     adjust_patches(hierarchyContext, pdag);
 
     Py_RETURN_NONE;

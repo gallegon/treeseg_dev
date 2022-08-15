@@ -22,6 +22,7 @@ void Hierarchy::add_patch(int patchID, Patch patch, std::pair<int, int> depths) 
 
 void Hierarchy::add_patchID(int patchID, std::pair<int, int> depths) {
     this->patchIDs.push_back(patchID);
+    std::cout << "Adding patch: " << patchID << " to hierarchy: " << this->id << std::endl;
     //(this->patchDepthMap).insert(std::make_pair(patchID, depths));
     patchDepthMap[patchID] = depths;
 }
@@ -55,7 +56,7 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
     std::pair<double, double> patchCentroid;
     std::vector<int> patchIDs;
 
-    double hacNumeratorX = 0, hacNumeratorY = 0, hacDenominator = 0;
+    double hacNumeratorX = 0.0, hacNumeratorY = 0.0, hacDenominator = 0.0;
     double centroidX, centroidY, hacConstant, hacX, hacY;
     int cellCount, heightDiff, hierarchyID, hierarchyCellCount = 0;
     std::pair<double, double> heightAdjustedCentroid;
@@ -65,22 +66,22 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
     Patch patch(0, 0);
     for (hierIt = hierarchyContext.hierarchies.begin(); hierIt != hierarchyContext.hierarchies.end(); ++hierIt) {
         hierarchyID = hierIt->first;
-        patchIDs = hierarchyContext.hierarchies.at(hierarchyID).getPatchIDs();
-        std::cout << "Hierarchy ID: " << hierarchyID << "Patches size: " << hierarchyContext.hierarchies.at(hierarchyID).getPatchIDs().size() << std::endl;
+        patchIDs = hierIt->second.getPatchIDs();
+        std::cout << "Hierarchy ID: " << hierarchyID << " Patches size: " << hierIt->second.getPatchIDs().size() << std::endl;
         // this is the meat of the height adjusted centroid calculation --
         // review 2.2.4 (6) from "The Paper".  This performs the summations that are
         // described in the equation mentioned.
         hierarchyCellCount = 0;
-        hacNumeratorX = 0;
-        hacNumeratorY = 0;
-        hacDenominator = 0;
+        hacNumeratorX = 0.0;
+        hacNumeratorY = 0.0;
+        hacDenominator = 0.0;
 
         for (patchItr = patchIDs.begin(); patchItr != patchIDs.end(); ++patchItr) {
             // This loop inspects each patch in a hierarchy to compute the height adjusted
             // centroid and the
             patch = pdagContext.patches.at(*patchItr);
-            cellCount = patch.getCellCount();
-            patchCentroid = patch.getCentroid();
+            cellCount = pdagContext.patches.at(*patchItr).getCellCount();
+            patchCentroid = pdagContext.patches.at(*patchItr).getCentroid();
 
             // These represent the Patch centroid's elements (x, y)
             centroidX = patchCentroid.first;
@@ -107,6 +108,7 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
         hacX = hacNumeratorX / hacDenominator;
         hacY = hacNumeratorY / hacDenominator;
 
+        std::cout << "HAC(" << hacX << ", " << hacY << ")" << std::endl;
         // Set the height-adjusted centroid for the hierarchy
         hierIt->second.setHAC(hacX, hacY);
         hierIt->second.setCellCount(hierarchyCellCount);
@@ -212,10 +214,10 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
                 nodeDepth = (int)distvector[*vi];
                 (pdagContext.patches.at((int) *vi)).add_hierarchy(hierarchy_id, hierarchyContext.connected_hierarchies);
                 h.add_patchID((int) *vi, std::make_pair(levelDepth, nodeDepth));
+
                 total_reachable += 1;
             }
         }
-
 
         //Print the reachable patches
         /*
@@ -246,12 +248,13 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
             next_count += percent_step;
             begin = std::chrono::steady_clock::now();
         }
+        hierarchies.at(hierarchy_id) = h;
         count += 1;
         hierarchy_id++;
     }
 
     hierarchyContext.hierarchies = hierarchies;
-
+    calculateHAC(pdagContext, hierarchyContext);
     std::cout << "Total reachable nodes from parentless patches = " << total_reachable << std::endl;
     std::cout << "Number of parentless patches = " << pdagContext.parentless_patches.size() << std::endl;
     std::cout << "Average reachable nodes per parentless patch = " << ((float) total_reachable / pdagContext.parentless_patches.size()) << std::endl;

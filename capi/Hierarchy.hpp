@@ -22,7 +22,7 @@ public:
     std::vector<int> getPatchIDs();
     std::pair<int, int> getPatchDepths(int patchID);
     void setHAC(double, double);
-    std::pair<double, double> get_HAC();
+    Centroid get_HAC();
     void setCellCount(int);
     void remove_patch(int);
 };
