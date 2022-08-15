@@ -13,6 +13,10 @@ Patch::Patch(int id, int level) {
     this->id = id;
     this->level = level;
     this->cell_count = 0;
+
+    // Intialize this to use later when adjusting patches
+    this->closest_hierarchy_id = -1;
+    this->closest_hierarchy_dist = std::numeric_limits<double>::max();
 }
 
 /*
@@ -50,6 +54,7 @@ void Patch::print_cells() {
 // This is used for keeping track of which hierarchies are connected.
 void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int> >& connected_hierarchies) {
     std::vector<int>::iterator it;
+    this->associated_hierarchies.push_back(hierarchy_id);
     for (it = this->associated_hierarchies.begin(); it != this->associated_hierarchies.end(); ++it) {
         if (hierarchy_id > *it) {
             connected_hierarchies.insert(std::make_pair(hierarchy_id, *it));
@@ -58,6 +63,26 @@ void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int> >& conn
             connected_hierarchies.insert(std::make_pair(*it, hierarchy_id));
         }
     }
+}
+
+void Patch::adjust_hierarchy(int hierarchy_id, Centroid hac)
+{
+    std::cout << "pX: " << this->centroid.first << " pY: ";
+    std::cout << this->centroid.second << std::endl;
+    std::cout << "hacX: " << hac.first << " hacY: " << hac.second << std::endl;
+
+    double distance = get_distance(this->centroid, hac);
+    std::cout << "distance: " << distance << std::endl;
+    // TODO: think about float comparison more
+    if (distance < this->closest_hierarchy_dist) {
+        this->closest_hierarchy_id = hierarchy_id;
+        this->closest_hierarchy_dist = distance;
+    }
+}
+
+int Patch::get_closest_hierarchy()
+{
+    return this->closest_hierarchy_id;
 }
 
 int Patch::get_level() {
@@ -89,7 +114,8 @@ void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neigh
     int neighbor_level = Get2D(levels, neighbor_i, neighbor_j);
 
     // if the id of the feature is different the the current id, we know that
-    // two patches are connected.
+    // two patches are connected.  Also check that the neighbor's level is
+    // not equal to 0.  We don't want to consider level 0 as patches.
     if (neighbor_id != current_id && neighbor_level != 0) {
         if (neighbor_level > current_level) {
             // set the direction flag towards the higher neighbor
@@ -320,4 +346,18 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     std::cout << "Average reachable nodes per parentless patch = " << ((float) total_reachable / context.parentless_patches.size()) << std::endl;
     std::cout << std::endl;
     */
+}
+
+
+double get_distance(Centroid c1, Centroid c2) {
+    int x1, x2, y1, y2;
+    int xs_squared, ys_squared;
+
+    x1 = c1.first;
+    x2 = c2.first;
+    y1 = c1.second;
+    y2 = c2.second;
+
+    // Not true distance, but it's what we need
+    return (pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }

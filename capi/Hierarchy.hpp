@@ -15,13 +15,16 @@ private:
     std::map<int, std::pair<int, int> > patchDepthMap;
 
 public:
+    Hierarchy();
     Hierarchy(int, int);
     void add_patch(int, Patch, std::pair<int, int>);
     void add_patchID(int, std::pair<int, int>);
     std::vector<int> getPatchIDs();
     std::pair<int, int> getPatchDepths(int patchID);
     void setHAC(double, double);
+    std::pair<double, double> get_HAC();
     void setCellCount(int);
+    void remove_patch(int);
 };
 
 struct HierarchyData {
@@ -31,4 +34,5 @@ struct HierarchyData {
 
 void compute_hierarchies(struct PdagData&, struct HierarchyData&);
 
+void calculateHAC(PdagData&, HierarchyData&);
 //#endif

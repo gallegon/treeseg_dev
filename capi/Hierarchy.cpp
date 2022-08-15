@@ -1,6 +1,13 @@
 #include "Hierarchy.hpp"
 #include <chrono>
 
+Hierarchy::Hierarchy() {
+    // Sneaky
+    this->id = 0;
+    this->height = 0;
+    this->cellCount = 0;
+}
+
 Hierarchy::Hierarchy(int id, int level) {
     this->id = id;
     this->height = level;
@@ -15,7 +22,8 @@ void Hierarchy::add_patch(int patchID, Patch patch, std::pair<int, int> depths) 
 
 void Hierarchy::add_patchID(int patchID, std::pair<int, int> depths) {
     this->patchIDs.push_back(patchID);
-    (this->patchDepthMap).insert(std::make_pair(patchID, depths));
+    //(this->patchDepthMap).insert(std::make_pair(patchID, depths));
+    patchDepthMap[patchID] = depths;
 }
 
 std::vector<int> Hierarchy::getPatchIDs() {
@@ -29,6 +37,10 @@ std::pair<int, int> Hierarchy::getPatchDepths(int patchID) {
 void Hierarchy::setHAC(double x, double y)
 {
     this->heightAdjustedCentroid = std::make_pair(x, y);
+}
+
+std::pair<double, double> Hierarchy::get_HAC() {
+    return this->heightAdjustedCentroid;
 }
 
 void Hierarchy::setCellCount(int cellCount)
@@ -48,23 +60,24 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
     int cellCount, heightDiff, hierarchyID, hierarchyCellCount = 0;
     std::pair<double, double> heightAdjustedCentroid;
 
+    std::cout << "Hierarchy context size: " << hierarchyContext.hierarchies.size() << std::endl;
     // Initialize some patch to use as the current patch.
     Patch patch(0, 0);
     for (hierIt = hierarchyContext.hierarchies.begin(); hierIt != hierarchyContext.hierarchies.end(); ++hierIt) {
         hierarchyID = hierIt->first;
         patchIDs = hierarchyContext.hierarchies.at(hierarchyID).getPatchIDs();
-
-        // this is the meat of the height adjusted centroid calculation -- 
+        std::cout << "Hierarchy ID: " << hierarchyID << "Patches size: " << hierarchyContext.hierarchies.at(hierarchyID).getPatchIDs().size() << std::endl;
+        // this is the meat of the height adjusted centroid calculation --
         // review 2.2.4 (6) from "The Paper".  This performs the summations that are
         // described in the equation mentioned.
         hierarchyCellCount = 0;
-        hacNumeratorX = 0; 
-        hacNumeratorY = 0; 
+        hacNumeratorX = 0;
+        hacNumeratorY = 0;
         hacDenominator = 0;
-        
+
         for (patchItr = patchIDs.begin(); patchItr != patchIDs.end(); ++patchItr) {
             // This loop inspects each patch in a hierarchy to compute the height adjusted
-            // centroid and the 
+            // centroid and the
             patch = pdagContext.patches.at(*patchItr);
             cellCount = patch.getCellCount();
             patchCentroid = patch.getCentroid();
@@ -73,7 +86,7 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
             centroidX = patchCentroid.first;
             centroidY = patchCentroid.second;
 
-            // heightDiff is the difference in height between the current patch and the 
+            // heightDiff is the difference in height between the current patch and the
             // hierarchy's top patch.
             // hacConstant is a constant that is defined as the cell count of the current
             // patch multiplied by ().  This constant gets used in the numerator and denominator.
@@ -176,18 +189,18 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         dijkstra_shortest_paths(pdagContext.graph, s,
             predecessor_map(predmap)
             .distance_map(distmap_vect));
-        
+
         // -- Reachable patches
         boost::graph_traits<DirectedGraph>::vertex_iterator vi, vend;
         for (boost::tie(vi, vend) = vertices(pdagContext.graph); vi != vend; ++vi) {
             if (distvector[*vi] != 2147483647) {
                 /*
                 Level Depth: The difference in height between a patch and a Hierarchy top
-                
-                Node Depth: The minimum number of nodes needed to reach a given patch from a 
+
+                Node Depth: The minimum number of nodes needed to reach a given patch from a
                 Hierarchy top.
 
-                See section 2.2.4. Weighted Graph of "The Paper" 
+                See section 2.2.4. Weighted Graph of "The Paper"
                 */
 
                 auto this_patch = pdagContext.patches.find((int)*vi);
@@ -197,10 +210,12 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
                 }
                 levelDepth = hierarchy_level - this_patch->second.get_level();
                 nodeDepth = (int)distvector[*vi];
+                (pdagContext.patches.at((int) *vi)).add_hierarchy(hierarchy_id, hierarchyContext.connected_hierarchies);
                 h.add_patchID((int) *vi, std::make_pair(levelDepth, nodeDepth));
                 total_reachable += 1;
             }
         }
+
 
         //Print the reachable patches
         /*
@@ -209,8 +224,8 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         std::vector<int>::iterator h_it;
 
 
-        
-        
+
+
         std::cout << "Hierarchy ID: " << hierarchy_id << std::endl;
         std::cout << "Reachable Patches by ID: ";
         for (h_it = reachablePatches.begin(); h_it != reachablePatches.end(); ++h_it) {
@@ -234,6 +249,8 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         count += 1;
         hierarchy_id++;
     }
+
+    hierarchyContext.hierarchies = hierarchies;
 
     std::cout << "Total reachable nodes from parentless patches = " << total_reachable << std::endl;
     std::cout << "Number of parentless patches = " << pdagContext.parentless_patches.size() << std::endl;

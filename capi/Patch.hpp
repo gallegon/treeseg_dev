@@ -15,6 +15,8 @@
 #include <map>
 #include <utility>  // for std::pair == operator overload
 #include <set>
+#include <cmath>
+#include <limits>
 //#include <chrono>
 
 #define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
@@ -24,22 +26,30 @@ typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty > DirectedGraph;
 typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
 
+typedef std::pair<double, double> Centroid;
+
 class Patch {
 private:
     int id;
     int level;
+    int closest_hierarchy_id;
+    double closest_hierarchy_dist;
     std::vector<std::pair<int, int> > cells;
-    std::vector<int> associated_hierarchies;
-    std::pair<double, double> centroid;
+    //std::vector<int> associated_hierarchies;
+    Centroid centroid;
     int sum_x = 0;
     int sum_y = 0;
     int cell_count = 0;
 public:
+    // TODO: make this a getter
+    std::vector<int> associated_hierarchies;
     Patch(int, int);
     void add_cell(int, int);
     void print_cells();
     void update_centroid();
     void add_hierarchy(int, std::set<std::pair<int, int> >&);
+    void adjust_hierarchy(int, Centroid);
+    int get_closest_hierarchy();
     int get_level();
     int getCellCount();
     std::pair<double, double> getCentroid();
@@ -59,3 +69,5 @@ std::vector<int> get_neighbors(int i, int j, int* dimension,
                                PyArrayObject* labels, PyArrayObject* levels);
 
 void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct PdagData&);
+
+double get_distance(Centroid, Centroid);

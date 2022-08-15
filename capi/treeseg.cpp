@@ -10,6 +10,7 @@
 #include "Patch.hpp"
 #include "Hierarchy.hpp"
 #include "disjointpatches.hpp"
+#include "HDAG.hpp"
 #include "pdalfilter.hpp"
 
 
@@ -48,7 +49,7 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
     reader->setOptions(options);
 
     std::cout << "-- Running pipeline..." << std::endl;
-    
+
     filter->withResolution(resolution);
     filter->withDiscretization(discretization);
     filter->withReader(*reader);
@@ -120,6 +121,8 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     create_patches(arrayLabels, arrayGrid, ddims, pdag);
     compute_hierarchies(pdag, hierarchyContext);
+    calculateHAC(pdag, hierarchyContext);
+    adjust_patches(hierarchyContext, pdag);
 
     Py_RETURN_NONE;
 }
