@@ -99,6 +99,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     // Used to get data from the patch creation step
     struct PdagData pdag;
     struct HierarchyData hierarchyContext;
+    std::vector<DirectedWeightedEdge> partitioned_edge_list;
 
     if (!PyArg_ParseTuple(args, "OOO", &argGrid, &argLabels, &argWeights)) {
         return NULL;
@@ -123,7 +124,8 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     compute_hierarchies(pdag, hierarchyContext);
     //calculateHAC(pdag, hierarchyContext);
     adjust_patches(hierarchyContext, pdag);
-
+    map_cells_to_hierarchies(hierarchyContext, pdag);
+    create_HDAG(partitioned_edge_list, hierarchyContext, pdag, arrayParams);
     Py_RETURN_NONE;
 }
 

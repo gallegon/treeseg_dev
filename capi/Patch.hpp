@@ -17,6 +17,8 @@
 #include <set>
 #include <cmath>
 #include <limits>
+#include <algorithm>
+#include<tuple>
 //#include <chrono>
 
 #define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
@@ -27,6 +29,7 @@ typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost
 typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
 
 typedef std::pair<double, double> Centroid;
+typedef std::pair<int, int> Cell;
 
 class Patch {
 private:
@@ -34,7 +37,7 @@ private:
     int level;
     int closest_hierarchy_id;
     double closest_hierarchy_dist;
-    std::vector<std::pair<int, int> > cells;
+    std::vector<Cell> cells;
     //std::vector<int> associated_hierarchies;
     Centroid centroid;
     int sum_x = 0;
@@ -52,6 +55,7 @@ public:
     int get_closest_hierarchy();
     int get_level();
     int getCellCount();
+    std::vector<Cell> get_cells();
     std::pair<double, double> getCentroid();
     void operator = (const Patch&);
 

@@ -9,11 +9,14 @@ private:
     int id;
     int height;
     int cellCount;
+    int top_patch_cell_count;
     std::map<int, Patch> patches;
     std::vector<int> patchIDs;
-    std::pair<double, double> heightAdjustedCentroid;
+    Centroid heightAdjustedCentroid;
+    Centroid top_patch_centroid;
     std::map<int, std::pair<int, int> > patchDepthMap;
-
+    std::vector<int> adjusted_patch_ids;
+    std::vector<Cell> adjusted_cells;
 public:
     Hierarchy();
     Hierarchy(int, int);
@@ -22,9 +25,19 @@ public:
     std::vector<int> getPatchIDs();
     std::pair<int, int> getPatchDepths(int patchID);
     void setHAC(double, double);
+    void set_TPC(Centroid);
+    void set_tp_cell_count(int);
+    int get_tp_cell_count();
+    Centroid get_TPC();
     Centroid get_HAC();
     void setCellCount(int);
     void remove_patch(int);
+    void add_adjusted_cell(Cell);
+    void add_adjusted_patch_id(int);
+    int get_cell_count();
+    int get_height();
+    int get_id();
+    std::vector<Cell> get_adjusted_cells();
 };
 
 struct HierarchyData {

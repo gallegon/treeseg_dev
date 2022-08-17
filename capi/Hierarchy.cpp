@@ -22,7 +22,7 @@ void Hierarchy::add_patch(int patchID, Patch patch, std::pair<int, int> depths) 
 
 void Hierarchy::add_patchID(int patchID, std::pair<int, int> depths) {
     this->patchIDs.push_back(patchID);
-    std::cout << "Adding patch: " << patchID << " to hierarchy: " << this->id << std::endl;
+    //std::cout << "Adding patch: " << patchID << " to hierarchy: " << this->id << std::endl;
     //(this->patchDepthMap).insert(std::make_pair(patchID, depths));
     patchDepthMap[patchID] = depths;
 }
@@ -49,7 +49,45 @@ void Hierarchy::setCellCount(int cellCount)
     this->cellCount = cellCount;
 }
 
+void Hierarchy::add_adjusted_cell(Cell cell) {
+    this->adjusted_cells.push_back(cell);
+}
 
+void Hierarchy::add_adjusted_patch_id(int patch_id) {
+    this->adjusted_patch_ids.push_back(patch_id);
+}
+
+void Hierarchy::set_TPC(Centroid centroid) {
+    this->top_patch_centroid = centroid;
+}
+
+Centroid Hierarchy::get_TPC() {
+    return this->top_patch_centroid;
+}
+
+int Hierarchy::get_cell_count() {
+    return this->cellCount;
+}
+
+int Hierarchy::get_height() {
+    return this->height;
+}
+
+void Hierarchy::set_tp_cell_count(int cc) {
+    this->top_patch_cell_count = cc;
+}
+
+int Hierarchy::get_tp_cell_count() {
+    return this->top_patch_cell_count;
+}
+
+int Hierarchy::get_id() {
+    return this->id;
+}
+
+std::vector<Cell> Hierarchy::get_adjusted_cells() {
+    return this->adjusted_cells;
+}
 void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyContext) {
     std::map<int, Hierarchy>::iterator hierIt;
     std::vector<int>::iterator patchItr;
@@ -67,7 +105,7 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
     for (hierIt = hierarchyContext.hierarchies.begin(); hierIt != hierarchyContext.hierarchies.end(); ++hierIt) {
         hierarchyID = hierIt->first;
         patchIDs = hierIt->second.getPatchIDs();
-        std::cout << "Hierarchy ID: " << hierarchyID << " Patches size: " << hierIt->second.getPatchIDs().size() << std::endl;
+        std::cout << "Hierarchy ID: " << hierarchyID << " Patches size: " << hierIt->second.getPatchIDs().size();
         // this is the meat of the height adjusted centroid calculation --
         // review 2.2.4 (6) from "The Paper".  This performs the summations that are
         // described in the equation mentioned.
@@ -108,7 +146,7 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
         hacX = hacNumeratorX / hacDenominator;
         hacY = hacNumeratorY / hacDenominator;
 
-        std::cout << "HAC(" << hacX << ", " << hacY << ")" << std::endl;
+        std::cout << " HAC(" << hacX << ", " << hacY << ")" << std::endl;
         // Set the height-adjusted centroid for the hierarchy
         hierIt->second.setHAC(hacX, hacY);
         hierIt->second.setCellCount(hierarchyCellCount);
@@ -185,6 +223,10 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         Hierarchy h(hierarchy_id, hierarchy_level);
         hierarchies.insert(std::pair<int, Hierarchy>(hierarchy_id, h));
 
+        // Set top patch centroid for the hierarchy
+        h.set_TPC(pdagContext.patches.at(vertex_id).getCentroid());
+        h.set_tp_cell_count(pdagContext.patches.at(vertex_id).getCellCount());
+        // Vertex descriptor for the BGL
         vertex_descriptor s = vertex(vertex_id, pdagContext.graph);
 
 

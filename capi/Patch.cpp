@@ -56,23 +56,27 @@ void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int> >& conn
     std::vector<int>::iterator it;
     this->associated_hierarchies.push_back(hierarchy_id);
     for (it = this->associated_hierarchies.begin(); it != this->associated_hierarchies.end(); ++it) {
-        if (hierarchy_id > *it) {
-            connected_hierarchies.insert(std::make_pair(hierarchy_id, *it));
-        }
-        else {
-            connected_hierarchies.insert(std::make_pair(*it, hierarchy_id));
+        // This check insures that the hierarchies are not connected to
+        // themselves.
+        if (hierarchy_id != *it) {
+            if (hierarchy_id > *it) {
+                connected_hierarchies.insert(std::make_pair(hierarchy_id, *it));
+            }
+            else {
+                connected_hierarchies.insert(std::make_pair(*it, hierarchy_id));
+            }
         }
     }
 }
 
 void Patch::adjust_hierarchy(int hierarchy_id, Centroid hac)
 {
-    std::cout << "pX: " << this->centroid.first << " pY: ";
-    std::cout << this->centroid.second << std::endl;
-    std::cout << "hacX: " << hac.first << " hacY: " << hac.second << std::endl;
+    //std::cout << "pX: " << this->centroid.first << " pY: ";
+    //std::cout << this->centroid.second << std::endl;
+    //std::cout << "hacX: " << hac.first << " hacY: " << hac.second << std::endl;
 
     double distance = get_distance(this->centroid, hac);
-    std::cout << "distance: " << distance << std::endl;
+    //std::cout << "distance: " << distance << std::endl;
     // TODO: think about float comparison more
     if (distance < this->closest_hierarchy_dist) {
         this->closest_hierarchy_id = hierarchy_id;
@@ -95,6 +99,10 @@ int Patch::getCellCount() {
 
 std::pair<double, double> Patch::getCentroid() {
     return (this->centroid);
+}
+
+std::vector<Cell> Patch::get_cells() {
+    return this->cells;
 }
 void Patch::operator=(const Patch& patch) {
     this->id = patch.id;
@@ -350,7 +358,7 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
 
 
 double get_distance(Centroid c1, Centroid c2) {
-    int x1, x2, y1, y2;
+    double x1, x2, y1, y2;
     int xs_squared, ys_squared;
 
     x1 = c1.first;
@@ -359,5 +367,5 @@ double get_distance(Centroid c1, Centroid c2) {
     y2 = c2.second;
 
     // Not true distance, but it's what we need
-    return (pow(x1 - x2, 2) + pow(y1 - y2, 2));
+    return (sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2)));
 }
