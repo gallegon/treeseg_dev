@@ -105,32 +105,12 @@ bool CustomFilter::processOne(PointRef& point) {
 void CustomFilter::filter(PointView& view) {
     PointRef point = view.point(0);
 
-    long count = 0;
     for (PointId pid = 0; pid < view.size(); ++pid) {
+        // Changes the Point which the PointRef points to.
+        // *NOT* changing the ID of the point itself!
         point.setPointId(pid);
         processOne(point);
-        count += 1;
     }
-
-    std::cout << "filter count = " << count << std::endl;
 }
-
-// PointViewSet CustomFilter::run(PointViewPtr input) {
-//     std::cout << "CustomFilter.run" << std::endl;
-//     // Use the PointViewSet to access point data (read/write).
-//     // getField and setField
-//     PointViewSet viewSet;
-//     viewSet.insert(input);
-
-//     // Perform discretization
-//     long totalCount = 0;
-//     for (int i = 0; i < viewSet.size(); i++) {
-//         totalCount += 1;
-//     }
-
-//     std::cout << "Total count = " << totalCount << std::endl;
-
-//     return viewSet;
-// }
 
 } // namespace pdal

@@ -46,7 +46,7 @@ def handle_label_las(input_file_path, output_folder_path, grid):
     output_file_path = os.path.join(output_folder_path, "test_output.las")
     ts.label_las(input_file_path, output_file_path, grid)
 
-def handle_discretize_points(input_file_path, resolution, discretization):
+def handle_read_and_discretize_points(input_file_path, resolution, discretization):
     grid = ts.discretize_points(input_file_path, resolution, discretization)
     
     return {
@@ -73,7 +73,8 @@ py_pipeline = Pipeline(verbose=True) \
 
 c_pipeline = Pipeline(verbose=True) \
     .then(handle_create_file_names_and_paths) \
-    .then(handle_discretize_points) \
+    \
+    .then(handle_read_and_discretize_points) \
     \
     .then(handle_gaussian_filter) \
     .then(handle_grid_height_cutoff) \
