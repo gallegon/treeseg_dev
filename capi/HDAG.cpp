@@ -77,9 +77,8 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
     //      - adjust the cells of each
     Hierarchy *h1, *h2;
     int h1_id, h2_id;
-
-    // FOR TESTING ONLY, NEED TO FIND A WAY TO INTREGREATE WITH NUMPY
-    double weight_threshold = 0.6;
+    
+    double weight_threshold = *((float *) PyArray_GETPTR1(weights, 5));
 
     //std::vector<DirectedWeightedEdge> edges;
 
