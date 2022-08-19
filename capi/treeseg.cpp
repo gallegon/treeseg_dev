@@ -183,8 +183,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
             int y = cit->second;
             *Ptr2D(hierarchy_labels, x, y) = tree_id;
         }
-        break;
-    }    
+    }
 
     std::cout << std::endl;
 
