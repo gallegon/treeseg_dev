@@ -177,11 +177,11 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         top_distance = get_distance(h1->get_TPC(), h2->get_TPC());
         centroid_distance = get_distance(h1->get_HAC(), h2->get_HAC());
 
-        std::cout << std::endl;
-        std::cout << "H1 ID: " << h1->get_id() << " || " << "H2 ID: " << h2->get_id() << std::endl;
-        std::cout << "H1 HAC: (" << h1->get_HAC().first << ", " << h1->get_HAC().second << ") || ";
-        std::cout << "H2 HAC: (" << h2->get_HAC().first << ", " << h2->get_HAC().second << ")" << std::endl;
-        std::cout << "CD: " << centroid_distance << std::endl;
+        // std::cout << std::endl;
+        // std::cout << "H1 ID: " << h1->get_id() << " || " << "H2 ID: " << h2->get_id() << std::endl;
+        // std::cout << "H1 HAC: (" << h1->get_HAC().first << ", " << h1->get_HAC().second << ") || ";
+        // std::cout << "H2 HAC: (" << h2->get_HAC().first << ", " << h2->get_HAC().second << ")" << std::endl;
+        // std::cout << "CD: " << centroid_distance << std::endl;
 
         /*
         The following represent the weights given in the initial parameters
@@ -203,8 +203,8 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         sr_weight = *((float *) PyArray_GETPTR1(weights, 2));
         td_weight = *((float *) PyArray_GETPTR1(weights, 3));
         cd_weight = *((float *) PyArray_GETPTR1(weights, 4));
-        std::cout << "Weights: " << ld_weight << ", " << nd_weight << ", " << sr_weight << ", " << td_weight << ", " << cd_weight << std::endl;
-        std::cout << "Stats:   " << min_ld << ", " << min_nd << ", " << shared_cell_count << ", " << top_distance << ", " << centroid_distance << std::endl;
+        // std::cout << "Weights: " << ld_weight << ", " << nd_weight << ", " << sr_weight << ", " << td_weight << ", " << cd_weight << std::endl;
+        // std::cout << "Stats:   " << min_ld << ", " << min_nd << ", " << shared_cell_count << ", " << top_distance << ", " << centroid_distance << std::endl;
         ld_score = 1 / min_ld;
         nd_score = 1 / min_nd;
         sr_score = shared_cell_count / (h1->get_cell_count() + h2->get_cell_count() - shared_cell_count);
@@ -214,7 +214,7 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
 
         HierarchyPair edge = get_direction(h1, h2);
 
-        std::cout<< "Directed Edge: (" << edge.first << ", " << edge.second << ") weight: " << edge_weight << std::endl;
+        // std::cout<< "Directed Edge: (" << edge.first << ", " << edge.second << ") weight: " << edge_weight << std::endl;
 
         edge_weight = (ld_weight * ld_score) + (nd_weight * nd_score) +
                       (sr_weight * sr_score) + (td_weight * td_score) +

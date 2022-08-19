@@ -14,7 +14,8 @@ treeseg_module = Extension("treeseg",
                         "disjointpatches.cpp",
                         "pdalfilter.cpp",
                         "Hierarchy.cpp",
-                        "HDAG.cpp"
+                        "HDAG.cpp",
+                        "disjointtrees.cpp"
                     ],
                     # Directories to any .hpp header files to be included.
                     include_dirs = [

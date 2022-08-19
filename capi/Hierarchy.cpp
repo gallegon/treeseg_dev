@@ -214,6 +214,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
         if (vertex_id < 0 || vertex_id > pdagContext.patches.size() - 1) {
             std::cout << "WORKING WITH VERTEX: " << vertex_id << std::endl;
+            // continue;
         }
 
         // Create a new Hierarchy object for each of the parentless nodes

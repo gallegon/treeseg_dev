@@ -20,7 +20,7 @@ def handle_vector_test(grid, labeled_grid, weight_level_depth,
     print("Vector test begin!")
 
     weight_params = [weight_level_depth, weight_node_depth, weight_shared_ratio, weight_top_distance, weight_centroid_distance, weight_threshold]
-    ts.vector_test(grid, labeled_grid, weight_params)
+    hierarchy_labels = ts.vector_test(grid, labeled_grid, weight_params)
     
     print("Vector test end!")
 
@@ -30,6 +30,13 @@ def handle_vector_test(grid, labeled_grid, weight_level_depth,
     print("== Labeled Grid")
     print(labeled_grid)
     print()
+    print("== Segmented Hierarchies")
+    print(hierarchy_labels)
+    print()
+
+    return {
+        "labeled_partitions": hierarchy_labels
+    }
 
 
 def handle_label_patches(grid):
@@ -84,5 +91,8 @@ c_pipeline = Pipeline(verbose=True) \
     \
     .then(handle_save_patches_raster) \
     \
-    .then(handle_vector_test)
+    .then(handle_vector_test) \
+    \
+    .then(handle_save_partition_raster) \
+    \
 

@@ -12,7 +12,7 @@
 #include "disjointpatches.hpp"
 #include "HDAG.hpp"
 #include "pdalfilter.hpp"
-
+#include "disjointtrees.hpp"
 
 
 
@@ -126,7 +126,70 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     adjust_patches(hierarchyContext, pdag);
     map_cells_to_hierarchies(hierarchyContext, pdag);
     create_HDAG(partitioned_edge_list, hierarchyContext, pdag, arrayParams);
-    Py_RETURN_NONE;
+
+    std::cout << std::endl;
+    std::cout << "== Partitioned Edge List" << std::endl;
+    std::cout << "size: " << partitioned_edge_list.size() << std::endl;
+
+
+    DisjointTrees dt;
+    for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
+        int parent_id = std::get<0>(*vit);
+        int child_id = std::get<1>(*vit);
+        double weight = std::get<2>(*vit);
+        // std::cout << "(parent=" << parent_id << ", child=" << child_id << ", weight=" << weight << ")" << std::endl;
+
+        // Hierarchy parent = hierarchyContext.hierarchies[parent_id];
+        // Hierarchy child = hierarchyContext.hierarchies[child_id];
+
+        TreeID tree_parent = dt.tree_from_hierarchy(parent_id);
+        TreeID tree_child = dt.tree_from_hierarchy(child_id);
+        // std::cout << "Got trees from hierarchies" << std::endl;
+        if (tree_parent == 0) {
+            tree_parent = dt.make_tree(parent_id);
+        }
+        
+        if (tree_child == 0) {
+            tree_child = dt.make_tree(child_id);
+        }
+        // std::cout << "Made trees" << std::endl;
+        // std::cout << "Pre-union: " << tree_parent << ", " << tree_child << std::endl;
+        dt.union_trees(tree_parent, tree_child);
+        // std::cout << "Unioned trees" << std::endl;
+    }
+
+    
+    // PyArrayObject* hierarchy_labels = (PyArrayObject*) PyArray_SimpleNew(ndims, dims, NPY_INT);
+    PyArrayObject* hierarchy_labels = (PyArrayObject*) PyArray_ZEROS(2, dims, NPY_INT, 0);
+
+    std::cout << "== Roots" << std::endl;
+    auto roots = dt.roots();
+
+    for (auto it = roots.begin(); it != roots.end(); ++it) {
+        TreeID tree_id = *it;
+        std::cout << "  " << *it << std::endl;
+        auto hs = dt.hierarchies_from_tree(tree_id);
+        std::set<int> patches_for_tree;
+        std::set<Cell> cells_for_tree;
+        for (auto hit = hs.begin(); hit != hs.end(); hit++) {
+            std::cout << "    " << *hit << std::endl;
+            Hierarchy hierarchy = hierarchyContext.hierarchies[*hit];
+            auto cells = hierarchy.get_adjusted_cells();
+            cells_for_tree.insert(cells.begin(), cells.end());
+        }
+
+        for (auto cit = cells_for_tree.begin(); cit != cells_for_tree.end(); ++cit) {
+            int x = cit->first;
+            int y = cit->second;
+            *Ptr2D(hierarchy_labels, x, y) = tree_id;
+        }
+        break;
+    }    
+
+    std::cout << std::endl;
+
+    // Py_RETURN_NONE;
+    return PyArray_Return(hierarchy_labels);
 }
 
 static PyMethodDef treesegMethods[] = {

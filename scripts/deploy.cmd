@@ -1,5 +1,7 @@
 @ECHO OFF
 
+setlocal
+
 pushd "%~dp0"\..\capi
 
 call conda activate treeseg_dev
@@ -29,3 +31,5 @@ if %ERRORLEVEL% == 0 (
 )
 
 popd
+
+endlocal
