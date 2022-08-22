@@ -1,0 +1,8 @@
+#flex-container {
+    display: flex;
+    flex-direction: row;
+}
+
+#sketch-controls {
+    margin: 0px 0px 0px 20px;
+}

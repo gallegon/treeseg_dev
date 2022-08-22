@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Tree Segmentation Visualizer</title>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.js"></script>
+
+    <!-- Uncomment the lines below to include extra p5 libraries, or 
+         use template-all or template-all-min:
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.sound.js"></script>
+    -->
+
+    <script src="sketch.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id="flex-container">
+            <div id="sketch-canvas">
+            </div>
+            <div id="sketch-controls">
+                <p>
+                    Hello, TreeSeg Visualizer!
+                    <br>
+                    Images expected for file inputs.
+                </p>
+
+                <table id="table-controls">
+                    <tr>
+                        <th></th>
+                        <th>File inputs</th>
+                        <th>Which grid to show</th>
+                    </tr>
+                    <tr>
+                        <th>
+                            Height Levels
+                        </th>
+                        <td>
+                            <input type="file" name="input-grid-height" id="input-grid-height">
+                        </td>
+                        <td>
+                            <input type="radio" name="input-grid-to-show" id="input-show-grid-height">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Patch Labels
+                        </th>
+                        <td>
+                            <input type="file" name="input-grid-patch" id="input-grid-patch">
+                        </td>
+                        <td>
+                            <input type="radio" name="input-grid-to-show" id="input-show-grid-patch">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Hierarchy Labels
+                        </th>
+                        <td>
+                            <input type="file" name="input-grid-hierarchy" id="input-grid-hierarchy">
+                        </td>
+                        <td>
+                            <input type="radio" name="input-grid-to-show" id="input-show-grid-hierarchy">
+                        </td>
+                    </tr>
+                </table>
+
+                <p>
+                    Cell coordinates: <span id="display-cell-coords"></span>
+                    <br>
+                    Height level: <span id="display-cell-height"></span>
+                    <br>
+                    Patch label: <span id="display-cell-patch"></span>
+                    <br>
+                    Hierarchy label: <span id="display-cell-hierarchy"></span>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
