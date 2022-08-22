@@ -21,10 +21,15 @@
             <div id="sketch-canvas">
             </div>
             <div id="sketch-controls">
+                <h2>
+                    Tree Segmentation Visualizer
+                </h2>
                 <p>
-                    Hello, TreeSeg Visualizer!
+                    Inputs are expected to be images, all of the same size.
                     <br>
-                    Images expected for file inputs.
+                    Patch and hierarchy images should be encoded with their respective IDs.
+                    <br>
+                    To inspect a different dataset (i.e. images of different sizes), refresh the page before loading.
                 </p>
 
                 <table id="table-controls">
@@ -68,14 +73,30 @@
                     </tr>
                 </table>
 
+                <h3>
+                    == Mouse
+                </h3>
                 <p>
-                    Cell coordinates: <span id="display-cell-coords"></span>
+                    Cell coordinates: <span id="display-mouse-cell-coords"></span>
                     <br>
-                    Height level: <span id="display-cell-height"></span>
+                    Height level: <span id="display-mouse-cell-height"></span>
                     <br>
-                    Patch label: <span id="display-cell-patch"></span>
+                    Patch label: <span id="display-mouse-cell-patch"></span>
                     <br>
-                    Hierarchy label: <span id="display-cell-hierarchy"></span>
+                    Hierarchy label: <span id="display-mouse-cell-hierarchy"></span>
+                </p>
+
+                <h3>
+                    == Selected
+                </h3>
+                <p>
+                    Cell coordinates: <span id="display-selected-cell-coords"></span>
+                    <br>
+                    Height level: <span id="display-selected-cell-height"></span>
+                    <br>
+                    Patch label: <span id="display-selected-cell-patch"></span>
+                    <br>
+                    Hierarchy label: <span id="display-selected-cell-hierarchy"></span>
                 </p>
             </div>
         </div>

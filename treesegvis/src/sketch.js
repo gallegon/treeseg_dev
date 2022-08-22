@@ -38,10 +38,16 @@ function draw() {
         let value_height = loaded_grids["height"] ? loaded_grids["height"].dataAt(cell_x, cell_y) : "NA";
         let value_patch = loaded_grids["patch"] ? loaded_grids["patch"].dataAt(cell_x, cell_y) : "NA";
         let value_hierarchy = loaded_grids["hierarchy"] ? loaded_grids["hierarchy"].dataAt(cell_x, cell_y) : "NA";
-        document.getElementById("display-cell-coords").innerHTML = "" + cell_x + ", " + cell_y;
-        document.getElementById("display-cell-height").innerHTML = "" + value_height;
-        document.getElementById("display-cell-patch").innerHTML = "" + value_patch;
-        document.getElementById("display-cell-hierarchy").innerHTML = "" + value_hierarchy;
+        document.getElementById("display-mouse-cell-coords").innerHTML = "" + cell_x + ", " + cell_y;
+        document.getElementById("display-mouse-cell-height").innerHTML = "" + value_height;
+        document.getElementById("display-mouse-cell-patch").innerHTML = "" + value_patch;
+        document.getElementById("display-mouse-cell-hierarchy").innerHTML = "" + value_hierarchy;
+    }
+    else {
+        document.getElementById("display-mouse-cell-coords").innerHTML = "NA";
+        document.getElementById("display-mouse-cell-height").innerHTML = "NA";
+        document.getElementById("display-mouse-cell-patch").innerHTML = "NA";
+        document.getElementById("display-mouse-cell-hierarchy").innerHTML = "NA";
     }
 
     if (selected_cell !== null) {
@@ -65,16 +71,25 @@ function mousePressed() {
     let cell_y = Math.floor((mouseY - pad_y) / cell_size);
     
     let inbounds = cell_x >= 0 && cell_x < current_grid.ncols && cell_y >= 0 && cell_y < current_grid.nrows;
-
+    let same_cell = selected_cell !== null && selected_cell[0] == cell_x && selected_cell[1] == cell_y;
+    
     if (inbounds) {
-        if (selected_cell == null) {
+        if (!same_cell) {
             selected_cell = [cell_x, cell_y];
-        }
-        else if (selected_cell[0] == cell_x && selected_cell[1] == cell_y) {
-            selected_cell = null;
+            let value_height = loaded_grids["height"] ? loaded_grids["height"].dataAt(cell_x, cell_y) : "NA";
+            let value_patch = loaded_grids["patch"] ? loaded_grids["patch"].dataAt(cell_x, cell_y) : "NA";
+            let value_hierarchy = loaded_grids["hierarchy"] ? loaded_grids["hierarchy"].dataAt(cell_x, cell_y) : "NA";
+            document.getElementById("display-selected-cell-coords").innerHTML = "" + cell_x + ", " + cell_y;
+            document.getElementById("display-selected-cell-height").innerHTML = "" + value_height;
+            document.getElementById("display-selected-cell-patch").innerHTML = "" + value_patch;
+            document.getElementById("display-selected-cell-hierarchy").innerHTML = "" + value_hierarchy;
         }
         else {
-            selected_cell = [cell_x, cell_y];
+            selected_cell = null;
+            document.getElementById("display-selected-cell-coords").innerHTML = "NA";
+            document.getElementById("display-selected-cell-height").innerHTML = "NA";
+            document.getElementById("display-selected-cell-patch").innerHTML = "NA";
+            document.getElementById("display-selected-cell-hierarchy").innerHTML = "NA";
         }
     }
 }
