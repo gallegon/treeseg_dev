@@ -6,3 +6,8 @@
 #sketch-controls {
     margin: 0px 0px 0px 20px;
 }
+
+#sketch-canvas {
+    max-width: 600px;
+    max-height: 600px;
+}
