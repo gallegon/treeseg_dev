@@ -7,8 +7,8 @@ pdal_include_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "include
 pdal_library_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "lib")
 
 treeseg_module = Extension("treeseg",
-                    # All .cpp source files to be compiled.
-                    sources = [
+                    # All .cpp source files to be compiled (in the src directory).
+                    sources = [os.path.join("src", s) for s in [
                         "treeseg.cpp",
                         "Patch.cpp",
                         "disjointpatches.cpp",
@@ -16,11 +16,12 @@ treeseg_module = Extension("treeseg",
                         "Hierarchy.cpp",
                         "HDAG.cpp",
                         "disjointtrees.cpp"
-                    ],
+                    ]],
                     # Directories to any .hpp header files to be included.
                     include_dirs = [
                         np.get_include(),
                         pdal_include_path,
+                        "include",
                         "libs"
                     ],
                     # -std=c++11
