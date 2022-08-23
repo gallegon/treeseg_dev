@@ -13,6 +13,7 @@
 #include "HDAG.hpp"
 #include "pdalfilter.hpp"
 #include "disjointtrees.hpp"
+#include "grid.hpp"
 
 
 
@@ -81,8 +82,10 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
 
     PyArrayObject* labels = (PyArrayObject*) PyArray_SimpleNew(ndims, dims, NPY_INT);
 
-
-    DisjointPatches ds(levels, labels);
+    Grid<int> grid_levels(width, height, PyArray_DATA(levels));
+    Grid<int> grid_labels(width, height, PyArray_DATA(labels));
+    
+    DisjointPatches ds(grid_levels, grid_labels);
     ds.compute_patches();
 
     std::cout << "Total number of patches = " << ds.size() << std::endl;

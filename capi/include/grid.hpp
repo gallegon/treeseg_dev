@@ -13,7 +13,7 @@ public:
 
     Grid(size_t width, size_t height, void* data) : width(width), height(height), data{static_cast<char*>(data)} {}
 
-    T* at(int i, int j) {
+    inline T* at(int i, int j) {
         return static_cast<T*>(static_cast<void*>(&(data[i * stride_x + j * stride_y])));
     }
 };
