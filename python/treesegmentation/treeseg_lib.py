@@ -37,14 +37,19 @@ class Pipeline:
         self.verbose = True if verbose else False
 
     def then(self, handler):
-        """Adds the next sequential stage in this pipeline.
+        """Adds the next sequential stage(s) in this pipeline.
 
-        :param handler: Handler function to be executed.
+        :param handler: Handler function or list of handlers to be executed.
             See ``Pipeline.execute`` for specification of handler functions.
 
         :return: Returns this pipeline. Allows ``.then`` calls to be chained.
         """
-        self.handlers.append(handler)
+
+        try:
+            self.handlers.extend(handler)
+        except TypeError:
+            self.handlers.append(handler)
+        
         return self
 
     def intersperse(self, wrapper):

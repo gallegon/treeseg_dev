@@ -59,40 +59,15 @@ def handle_read_and_discretize_points(input_file_path, resolution, discretizatio
     return {
         "grid": grid
     }
-    
 
-py_pipeline = Pipeline(verbose=True) \
-    .then(handle_create_file_names_and_paths) \
-    .then(handle_read_las_data) \
-    .then(handle_las2img) \
-    .then(handle_gaussian_filter) \
-    .then(handle_grid_height_cutoff) \
-    .then(handle_save_grid_raster) \
-    \
-    .then(handle_compute_patches) \
-    .then(handle_patches_to_dict) \
-    .then(handle_compute_patches_labeled_grid) \
-    .then(handle_compute_patch_neighbors) \
-    .then(handle_save_patches_raster) \
-    .then(handle_compute_hierarchies) \
-    # .then(handle_find_connected_hierarchies)
-
-
-c_pipeline = Pipeline(verbose=True) \
-    .then(handle_create_file_names_and_paths) \
-    \
-    .then(handle_read_and_discretize_points) \
-    \
-    .then(handle_gaussian_filter) \
-    .then(handle_grid_height_cutoff) \
-    .then(handle_save_grid_raster) \
-    \
-    .then(handle_label_patches) \
-    \
-    .then(handle_save_patches_raster) \
-    \
-    .then(handle_vector_test) \
-    \
-    .then(handle_save_partition_raster) \
-    \
-
+c_pipeline = Pipeline(verbose=True).then([
+    handle_create_file_names_and_paths,
+    handle_read_and_discretize_points,
+    handle_gaussian_filter,
+    handle_grid_height_cutoff,
+    handle_save_grid_raster,
+    handle_label_patches,
+    handle_save_patches_raster,
+    handle_vector_test,
+    handle_save_partition_raster
+])

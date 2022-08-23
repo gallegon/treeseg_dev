@@ -8,7 +8,7 @@ import sys
 
 from treesegmentation.treeseg_lib import *
 
-from integration_with_c import c_pipeline, py_pipeline
+from integration_with_c import c_pipeline
 
 
 def run_treesegmentation(initial_context):
@@ -22,26 +22,27 @@ def run_treesegmentation(initial_context):
 
     # Default/intended ordering of the pipeline operations.
     # Can be changed or extended easily.
-    algorithm = Pipeline(verbose=True) \
-        .then(handle_create_file_names_and_paths) \
-        .then(handle_read_las_data) \
-        .then(handle_las2img) \
-        .then(handle_gaussian_filter) \
-        .then(handle_grid_height_cutoff) \
-        .then(handle_save_grid_raster) \
-        .then(handle_compute_patches) \
-        .then(handle_patches_to_dict) \
-        .then(handle_compute_patches_labeled_grid) \
-        .then(handle_compute_patch_neighbors) \
-        .then(handle_save_patches_raster) \
-        .then(handle_compute_hierarchies) \
-        .then(handle_find_connected_hierarchies) \
-        .then(handle_calculate_edge_weight) \
-        .then(handle_partition_graph) \
-        .then(handle_trees_to_labeled_grid) \
-        .then(handle_save_partition_raster) \
-        .then(handle_label_point_cloud) \
-        .then(handle_save_context_file)
+    algorithm = Pipeline(verbose=True).then([
+        handle_create_file_names_and_paths,
+        handle_read_las_data,
+        handle_las2img,
+        handle_gaussian_filter,
+        handle_grid_height_cutoff,
+        handle_save_grid_raster,
+        handle_compute_patches,
+        handle_patches_to_dict,
+        handle_compute_patches_labeled_grid,
+        handle_compute_patch_neighbors,
+        handle_save_patches_raster,
+        handle_compute_hierarchies,
+        handle_find_connected_hierarchies,
+        handle_calculate_edge_weight,
+        handle_partition_graph,
+        handle_trees_to_labeled_grid,
+        handle_save_partition_raster,
+        handle_label_point_cloud,
+        handle_save_context_file
+    ])
     
     # Pipeline with integrated C++ stages
     algorithm = c_pipeline
