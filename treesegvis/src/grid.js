@@ -25,9 +25,9 @@ function createDisplayImage(data) {
     let w = data.length;
     let h = data[0].length;
     let disp_img = createImage(w, h);
-    let next_r = Math.floor(random(255));
-    let next_g = Math.floor(random(255));
-    let next_b = Math.floor(random(255));
+    let next_r = Math.floor(10, random(255));
+    let next_g = Math.floor(10, random(255));
+    let next_b = Math.floor(10, random(255));
 
     disp_img.loadPixels();
     for (let i = 0; i < w; i++) {
@@ -37,12 +37,12 @@ function createDisplayImage(data) {
                 disp_img.set(i, j, 0);
                 continue;
             }
-            
+
             if (!(value in palette)) {
                 palette[value] = [next_r, next_g, next_b];
-                next_r = Math.floor(random(255));
-                next_g = Math.floor(random(255));
-                next_b = Math.floor(random(255));
+                next_r = Math.floor(random(10, 255));
+                next_g = Math.floor(random(10, 255));
+                next_b = Math.floor(random(10, 255));
             }
 
             let [r, g, b] = palette[value];
@@ -53,13 +53,33 @@ function createDisplayImage(data) {
     return disp_img;
 }
 
+function createImageMaskFromData(data, match) {
+    let w = data.length;
+    let h = data[0].length;
+    let mask = createImage(w, h);
+    let mask_color = color(0, 255, 0, 127);
+    mask.loadPixels();
+    for (let i = 0; i < w; i++) {
+        for (let j = 0; j < h; j++) {
+            let value = data[i][j];
+            if (value == match) {
+                mask.set(i, j, mask_color);
+            }
+            else {
+                mask.set(i, j, color(0, 0, 0, 0));
+            }
+        }
+    }
+    mask.updatePixels();
+    return mask;
+}
+
 class Grid {
     constructor(ncols, nrows, img, data_decoder, display_decoder) {
         this.ncols = ncols;
         this.nrows = nrows;
         this.data = decodeImage(img, data_decoder);
         this.display_image = display_decoder(img, this.data);
-        console.log("Grid constructor")
     }
 
     colorAt(x, y) {
@@ -103,22 +123,5 @@ class Grid {
         let cell_size = this.cellSize();
 
         image(this.display_image, pad_x, pad_y, this.ncols * cell_size, this.nrows * cell_size);
-
-        // for (let i = 0; i < this.ncols; i++) {
-        //     for (let j = 0; j < this.nrows; j++) {
-        //         push();
-        //         let x = Math.floor(pad_x + i * cell_size);
-        //         let y = Math.floor(pad_y + j * cell_size);
-        //         // translate(x, y);
-        //         // let [r, g, b] = this.getAt(i, j);
-        //         let [r, g, b] = this.colorAt(i, j);
-        //         fill(r, g, b);
-        //         // fill(255, 0, 0);
-        //         // stroke(0);
-        //         noStroke();
-        //         rect(x, y, cell_size, cell_size);
-        //         pop();
-        //     }
-        // }
     }
 }

@@ -7,6 +7,7 @@ let grid_to_show = null;
 let current_grid = null;
 let loaded_grids = {};
 let selected_cell = null;
+let mask_hierarchy = null;
 
 function setup() {
     let canvas = createCanvas(200, 200);
@@ -26,9 +27,14 @@ function draw() {
 
     background(204);
     current_grid.render();
-
+    
     let [pad_x, pad_y] = current_grid.padding();
     let cell_size = current_grid.cellSize();
+    
+    if (mask_hierarchy !== null) {
+        image(mask_hierarchy, pad_x, pad_y, current_grid.ncols * cell_size, current_grid.nrows * cell_size)
+    }
+
     let cell_x = Math.floor((mouseX - pad_x) / cell_size);
     let cell_y = Math.floor((mouseY - pad_y) / cell_size);
     
@@ -83,6 +89,32 @@ function mousePressed() {
             document.getElementById("display-selected-cell-height").innerHTML = "" + value_height;
             document.getElementById("display-selected-cell-patch").innerHTML = "" + value_patch;
             document.getElementById("display-selected-cell-hierarchy").innerHTML = "" + value_hierarchy;
+
+            if (loaded_grids["hierarchy"] !== undefined) {
+                mask_hierarchy = createImageMaskFromData(loaded_grids["hierarchy"].data, value_hierarchy);
+                if (loaded_grids["patch"] !== undefined) {
+                    let contained_patches = [];
+                    // Determine all patches contained within this mask 
+                    let w = loaded_grids["hierarchy"].data.length;
+                    let h = loaded_grids["hierarchy"].data[0].length;
+                    for (let i = 0; i < w; i++) {
+                        for (let j = 0; j < h; j++) {
+                            let [mr, mg, mb, ma] = mask_hierarchy.get(i, j);
+                            if (ma == 0) {
+                                continue;
+                            }
+                            let patch = loaded_grids["patch"].data[i][j];
+                            if (!(contained_patches.includes(patch))) {
+                                contained_patches.push(patch);
+                            }
+                        }
+                    }
+
+                    let patches_str = contained_patches.join(", ");
+                    document.getElementById("display-selected-contained-patches").innerHTML = patches_str;
+                    document.getElementById("display-selected-contained-patches-count").innerHTML = contained_patches.length;
+                }
+            }
         }
         else {
             selected_cell = null;
@@ -90,6 +122,10 @@ function mousePressed() {
             document.getElementById("display-selected-cell-height").innerHTML = "NA";
             document.getElementById("display-selected-cell-patch").innerHTML = "NA";
             document.getElementById("display-selected-cell-hierarchy").innerHTML = "NA";
+            document.getElementById("display-selected-contained-patches").innerHTML = "NA";
+            document.getElementById("display-selected-contained-patches-count").innerHTML = "NA";
+
+            mask_hierarchy = null;
         }
     }
 }
