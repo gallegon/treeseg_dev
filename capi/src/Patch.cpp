@@ -115,11 +115,13 @@ void Patch::operator=(const Patch& patch) {
     this->cell_count = patch.cell_count;
 }
 void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neighbor_j, int n,int current_id,
-                        int current_level, PyArrayObject* labels,
-                        PyArrayObject* levels) {
+                        int current_level, Grid<int>& labels,
+                        Grid<int>& levels) {
     // get the feature id and level of the neighboring cell
-    int neighbor_id = Get2D(labels, neighbor_i, neighbor_j);
-    int neighbor_level = Get2D(levels, neighbor_i, neighbor_j);
+    // int neighbor_id = Get2D(labels, neighbor_i, neighbor_j);
+    // int neighbor_level = Get2D(levels, neighbor_i, neighbor_j);
+    int neighbor_id = labels.get(neighbor_i, neighbor_j);
+    int neighbor_level = levels.get(neighbor_i, neighbor_j);
 
     // if the id of the feature is different the the current id, we know that
     // two patches are connected.  Also check that the neighbor's level is
@@ -139,7 +141,7 @@ void addDirectedNeighbor(std::vector<int>& neighbors,  int neighbor_i, int neigh
 #define RIGHT 1
 #define LEFT -1
 
-std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* labels, PyArrayObject* levels) {
+std::vector<int> get_neighbors(int i, int j, int* dimensions, Grid<int>& labels, Grid<int>& levels) {
     // m is the i size of the array, n is the j size
     int m = dimensions[0];
     int n = dimensions[1];
@@ -151,8 +153,10 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* lab
     std::vector<int> neighbors;
 
     // TODO: find out a way to not have to cast from system int to npy_intp
-    int current_id = Get2D(labels, i, j);
-    int current_level = Get2D(levels, i, j);
+    // int current_id = Get2D(labels, i, j);
+    // int current_level = Get2D(levels, i, j);
+    int current_id = labels.get(i, j);
+    int current_level = levels.get(i, j);
 
     // Old way using non-NumPy arrays
     //int current_id = labels[IDX(i, j)];
@@ -192,7 +196,7 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, PyArrayObject* lab
     return neighbors;
 }
 
-void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct PdagData& context) {
+void create_patches(Grid<int>& labels, Grid<int>& levels, int* dimensions, struct PdagData& context) {
     //std::map<int, Patch> patches;
 
     // Use this dictionary to keep track of patches that have no parent.
@@ -221,8 +225,10 @@ void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimension
     // TODO: implement this 2D loop with NumPy's array iterators.
     for (int i = 0; i < m; ++i) {
         for (int j = 0; j < n; ++j) {
-            current_feature = Get2D(labels, i, j);
-            current_level = Get2D(levels, i, j);
+            // current_feature = Get2D(labels, i, j);
+            // current_level = Get2D(levels, i, j);
+            current_feature = labels.get(i, j);
+            current_level = levels.get(i, j);
             // current_feature = (int) *(PyArray_GETPTR2(labels, (npy_intp)i, (npy_intp)j));
             // current_feature = labelsData[IDX(i, j)];
 

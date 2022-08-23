@@ -16,4 +16,8 @@ public:
     inline T* at(int i, int j) {
         return static_cast<T*>(static_cast<void*>(&(data[i * stride_x + j * stride_y])));
     }
+
+    inline T get(int i, int j) {
+        return *at(i, j);
+    }
 };

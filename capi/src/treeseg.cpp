@@ -123,7 +123,10 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     // Used to get data from the patch creation step
     //struct PdagData pdag;
 
-    create_patches(arrayLabels, arrayGrid, ddims, pdag);
+    Grid<int> labels(dims[0], dims[1], PyArray_DATA(arrayLabels));
+    Grid<int> levels(dims[0], dims[1], PyArray_DATA(arrayGrid));
+
+    create_patches(labels, levels, ddims, pdag);
     compute_hierarchies(pdag, hierarchyContext);
     //calculateHAC(pdag, hierarchyContext);
     adjust_patches(hierarchyContext, pdag);
@@ -165,6 +168,8 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     // PyArrayObject* hierarchy_labels = (PyArrayObject*) PyArray_SimpleNew(ndims, dims, NPY_INT);
     PyArrayObject* hierarchy_labels = (PyArrayObject*) PyArray_ZEROS(2, dims, NPY_INT, 0);
 
+    Grid<int> hierarchy_grid(dims[0], dims[1], PyArray_DATA(hierarchy_labels));
+
     std::cout << "== Roots" << std::endl;
     auto roots = dt.roots();
 
@@ -184,7 +189,8 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         for (auto cit = cells_for_tree.begin(); cit != cells_for_tree.end(); ++cit) {
             int x = cit->first;
             int y = cit->second;
-            *Ptr2D(hierarchy_labels, x, y) = tree_id;
+            // *Ptr2D(hierarchy_labels, x, y) = tree_id;
+            *hierarchy_grid.at(x, y) = tree_id;
         }
     }
 

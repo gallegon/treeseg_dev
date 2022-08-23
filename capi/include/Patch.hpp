@@ -18,11 +18,12 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
-#include<tuple>
+#include <tuple>
+#include "grid.hpp"
 //#include <chrono>
 
-#define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
-#define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
+// #define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
+// #define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
 
 typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty > DirectedGraph;
@@ -70,8 +71,8 @@ struct PdagData {
 };
 
 std::vector<int> get_neighbors(int i, int j, int* dimension,
-                               PyArrayObject* labels, PyArrayObject* levels);
+                               Grid<int>& labels, Grid<int>& levels);
 
-void create_patches(PyArrayObject* labels, PyArrayObject* levels, int* dimensions, struct PdagData&);
+void create_patches(Grid<int>& labels, Grid<int>& levels, int* dimensions, struct PdagData&);
 
 double get_distance(Centroid, Centroid);
