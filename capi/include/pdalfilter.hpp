@@ -10,10 +10,7 @@
 #include "pdal/Reader.hpp"
 #include "pdal/Streamable.hpp"
 
-#include "Python.h"
-#define NO_IMPORT_ARRAY
-#define PY_ARRAY_UNIQUE_SYMBOL treeseg_ARRAY_API
-#include "numpy/arrayobject.h"
+#include "grid.hpp"
 
 namespace pdal {
 
@@ -26,11 +23,11 @@ public:
     void withReader(Stage& reader);
     void withResolution(float res);
     void withDiscretization(int disc);
-    PyArrayObject* getGrid();
+    Grid<int>* getGrid();
 
 private:
     Stage* reader;
-    PyArrayObject* grid;
+    Grid<int>* grid;
     double resolution;
     double discretization;
     double scale_x;

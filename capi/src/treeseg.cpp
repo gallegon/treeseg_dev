@@ -60,7 +60,12 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
 
     std::cout << "-- Finished running reader & filter" << std::endl;
 
-    PyArrayObject* discretized_grid = filter->getGrid();
+    auto grid = filter->getGrid();
+    const npy_intp dims[] = {grid->width, grid->height};
+
+
+    PyArrayObject* discretized_grid = (PyArrayObject*) PyArray_SimpleNewFromData(2, dims, NPY_INT, grid->data);
+
     return PyArray_Return(discretized_grid);
 }
 
@@ -126,12 +131,20 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     Grid<int> labels(dims[0], dims[1], PyArray_DATA(arrayLabels));
     Grid<int> levels(dims[0], dims[1], PyArray_DATA(arrayGrid));
 
-    create_patches(labels, levels, ddims, pdag);
+    create_patches(labels, levels, pdag);
     compute_hierarchies(pdag, hierarchyContext);
     //calculateHAC(pdag, hierarchyContext);
     adjust_patches(hierarchyContext, pdag);
     map_cells_to_hierarchies(hierarchyContext, pdag);
-    create_HDAG(partitioned_edge_list, hierarchyContext, pdag, arrayParams);
+    float weights[6] = {
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 0))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 1))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 2))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 3))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 4))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 5)))
+    };
+    create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
     std::cout << std::endl;
     std::cout << "== Partitioned Edge List" << std::endl;

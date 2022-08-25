@@ -1,10 +1,4 @@
 #pragma once
-#define PY_SSIZE_T_CLEAN
-#include "Python.h"
-#define NO_IMPORT_ARRAY
-#define PY_ARRAY_UNIQUE_SYMBOL treeseg_ARRAY_API
-#include "numpy/arrayobject.h"
-#include "numpy/ufuncobject.h"
 #include <math.h>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/breadth_first_search.hpp>
@@ -73,6 +67,6 @@ struct PdagData {
 std::vector<int> get_neighbors(int i, int j, int* dimension,
                                Grid<int>& labels, Grid<int>& levels);
 
-void create_patches(Grid<int>& labels, Grid<int>& levels, int* dimensions, struct PdagData&);
+void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData&);
 
 double get_distance(Centroid, Centroid);

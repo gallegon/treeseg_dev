@@ -70,7 +70,7 @@ HierarchyPair get_direction(Hierarchy* h1, Hierarchy* h2) {
 
 void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
                  HierarchyData& hierarchy_context, PdagData& pdag_context,
-                 PyArrayObject* weights) {
+                 float weights[6]) {
     // Calculate HAC for every hierarchy
     // adjust patches
     //      - map each patch to a hierarchy
@@ -78,7 +78,8 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
     Hierarchy *h1, *h2;
     int h1_id, h2_id;
     
-    double weight_threshold = *((float *) PyArray_GETPTR1(weights, 5));
+    // double weight_threshold = *((float *) PyArray_GETPTR1(weights, 5));
+    double weight_threshold = weights[5];
 
     //std::vector<DirectedWeightedEdge> edges;
 
@@ -198,11 +199,16 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         double edge_weight;
 
         // Get the weights from the NumPy array object
-        ld_weight = *((float *) PyArray_GETPTR1(weights, 0));
-        nd_weight = *((float *) PyArray_GETPTR1(weights, 1));
-        sr_weight = *((float *) PyArray_GETPTR1(weights, 2));
-        td_weight = *((float *) PyArray_GETPTR1(weights, 3));
-        cd_weight = *((float *) PyArray_GETPTR1(weights, 4));
+        // ld_weight = *((float *) PyArray_GETPTR1(weights, 0));
+        // nd_weight = *((float *) PyArray_GETPTR1(weights, 1));
+        // sr_weight = *((float *) PyArray_GETPTR1(weights, 2));
+        // td_weight = *((float *) PyArray_GETPTR1(weights, 3));
+        // cd_weight = *((float *) PyArray_GETPTR1(weights, 4));
+        ld_weight = weights[0];
+        nd_weight = weights[1];
+        sr_weight = weights[2];
+        td_weight = weights[3];
+        cd_weight = weights[4];
         // std::cout << "Weights: " << ld_weight << ", " << nd_weight << ", " << sr_weight << ", " << td_weight << ", " << cd_weight << std::endl;
         // std::cout << "Stats:   " << min_ld << ", " << min_nd << ", " << shared_cell_count << ", " << top_distance << ", " << centroid_distance << std::endl;
         ld_score = 1 / min_ld;

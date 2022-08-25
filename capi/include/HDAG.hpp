@@ -1,5 +1,6 @@
 #pragma once
 #include "Hierarchy.hpp"
+#include "grid.hpp"
 
 typedef std::pair<int, double> MaxInboundEdge;
 
@@ -13,7 +14,7 @@ struct maximal_inbound_edge {
         double weight;
 };
 
-void create_HDAG(std::vector<DirectedWeightedEdge>&, struct HierarchyData&, struct PdagData&, PyArrayObject*);
+void create_HDAG(std::vector<DirectedWeightedEdge>&, struct HierarchyData&, struct PdagData&, float weights[6]);
 
 void adjust_patches(struct HierarchyData&, struct PdagData&);
 

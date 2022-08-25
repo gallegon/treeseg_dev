@@ -16,7 +16,7 @@ std::string CustomFilter::getName() const {
     return s_info.name;
 }
 
-PyArrayObject* CustomFilter::getGrid() {
+Grid<int>* CustomFilter::getGrid() {
     return grid;
 }
 
@@ -50,7 +50,7 @@ void CustomFilter::ready(PointTableRef table) {
     scale_y = header("scale_y").value<double>();
     scale_z = header("scale_z").value<double>();
     min_x = (int) (header("minx").value<double>() / scale_x);
-    max_x = (int) (header("maxx").value<double>() / scale_z);
+    max_x = (int) (header("maxx").value<double>() / scale_x);
     min_y = (int) (header("miny").value<double>() / scale_y);
     max_y = (int) (header("maxy").value<double>() / scale_y);
     min_z = (int) (header("minz").value<double>() / scale_z);
@@ -69,10 +69,12 @@ void CustomFilter::ready(PointTableRef table) {
     std::cout << "grid_size: (" << grid_width << ", " << grid_height << ")" << std::endl;
     std::cout << "cell_size: (" << cell_size_x << ", " << cell_size_y << ")" << std::endl;
 
-    npy_intp dims[] = { grid_width, grid_height };
-    PyArrayObject* newgrid = (PyArrayObject*) PyArray_ZEROS(2, dims, NPY_INT, 0);
+    // npy_intp dims[] = { grid_width, grid_height };
+    // PyArrayObject* newgrid = (PyArrayObject*) PyArray_ZEROS(2, dims, NPY_INT, 0);
     std::cout << "Created grid" << std::endl;
-    this->grid = newgrid;
+    this->grid = new Grid<int>(grid_width, grid_height);
+    std::cout << this->grid->width << ", " << this->grid->height << std::endl;
+    std::cout << this->grid->get(0, 0) << ", " << this->grid->get(1, 0) << ", " << this->grid->get(2, 0) << std::endl;
 
     // grid_size = np.ceil(range_xyz[:2] / resolution).astype("int")
     // cell_size = np.ceil(resolution / scale_xyz[:2]).astype("int")
@@ -94,7 +96,11 @@ bool CustomFilter::processOne(PointRef& point) {
     int cell_y = (int) ((y - min_y) / cell_size_y);
     int level = (int) round(z / max_z * discretization);
     
-    int* grid_ptr = (int*) PyArray_GETPTR2(grid, cell_x, cell_y);
+    // int* grid_ptr = (int*) PyArray_GETPTR2(grid, cell_x, cell_y);
+    if (cell_x < 0 || cell_x >= grid->width) std::cout << "cell_x > grid width: " << cell_x << std::endl;
+    if (cell_y < 0 || cell_y >= grid->height) std::cout << "cell_y > grid height: " << cell_y << std::endl;
+    int* grid_ptr = grid->at(cell_x, cell_y);
+    // std::cout << "Looking at: " << cell_x << ", " << cell_y << " = " << *grid_ptr << std::endl;
     if (level > *grid_ptr) {
         *grid_ptr = level;
     }
@@ -105,12 +111,15 @@ bool CustomFilter::processOne(PointRef& point) {
 void CustomFilter::filter(PointView& view) {
     PointRef point = view.point(0);
 
+    std::cout << "Starting point loop" << std::endl;
     for (PointId pid = 0; pid < view.size(); ++pid) {
         // Changes the Point which the PointRef points to.
         // *NOT* changing the ID of the point itself!
         point.setPointId(pid);
         processOne(point);
     }
+
+    std::cout << "Processed every point!" << std::endl;
 }
 
 } // namespace pdal

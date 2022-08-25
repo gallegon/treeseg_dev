@@ -196,7 +196,7 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, Grid<int>& labels,
     return neighbors;
 }
 
-void create_patches(Grid<int>& labels, Grid<int>& levels, int* dimensions, struct PdagData& context) {
+void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& context) {
     //std::map<int, Patch> patches;
 
     // Use this dictionary to keep track of patches that have no parent.
@@ -213,9 +213,10 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, int* dimensions, struc
     std::set<std::pair<int, int> >::iterator set_iter;
 
 
-    int m = dimensions[0];
-    int n = dimensions[1];
+    int m = levels.width;
+    int n = levels.height;
     int current_feature, current_level;
+    int dimensions[2] = {m, n};
 
     DirectedGraph g;
 
