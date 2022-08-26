@@ -40,6 +40,7 @@ void CustomFilter::addDimensions(PointLayoutPtr layout) {
 }
 
 void CustomFilter::ready(PointTableRef table) {
+    std::cout << "CustomFilter::ready!" << std::endl;
     auto metadata = reader->getMetadata();
 
     auto header = [&metadata](auto s) {
