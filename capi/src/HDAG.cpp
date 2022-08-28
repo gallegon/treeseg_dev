@@ -227,7 +227,7 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
                       (cd_weight * cd_score);
         //std::cout << "(" << h1_id << ", " << h2_id << ") weight: " << edge_weight << std::endl;
 
-        std::cout << std::endl;
+        // std::cout << std::endl;
 
         int parent = edge.first;
         int child = edge.second;
@@ -252,8 +252,10 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
 
     }
 
-    std::cout << std::endl;
-    std::cout << "Maximal inbound edges list" << std::endl;
+    // std::cout << std::endl;
+    
+    DPRINT("Maximal inbound edges list");
+    
     // Create a list of edges for the partitioend graph
     int parent, child;
     double weight;
@@ -263,7 +265,7 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         child = mie_it->first;
         weight = mie_it->second.second;
         edges.push_back(std::make_tuple(parent, child, weight));
-        std::cout << "(" << parent << ", " << child << ") Weight: " << weight << std::endl;
+        DPRINT("(" << parent << ", " << child << ") Weight: " << weight);
     }
 }
 
@@ -343,15 +345,15 @@ void map_cells_to_hierarchies(struct HierarchyData& hierarchyContext, struct Pda
         }
     }
 
-    std::map<int, Hierarchy>::iterator hier_map_it;
-
-
-    for (hier_map_it = hierarchies->begin(); hier_map_it != hierarchies->end(); ++hier_map_it) {
-        cells = hier_map_it->second.get_adjusted_cells();
-        std::cout << "Hierachy ID: " << hier_map_it->first << " Cells: ";
-        for (c_itr = cells.begin(); c_itr != cells.end(); ++c_itr) {
-            std::cout << "(" << c_itr->first << ", " << c_itr->second << ") ";
+    DEBUG(
+        std::map<int, Hierarchy>::iterator hier_map_it;
+        for (hier_map_it = hierarchies->begin(); hier_map_it != hierarchies->end(); ++hier_map_it) {
+            cells = hier_map_it->second.get_adjusted_cells();
+            std::cout << "Hierachy ID: " << hier_map_it->first << " Cells: ";
+            for (c_itr = cells.begin(); c_itr != cells.end(); ++c_itr) {
+                std::cout << "(" << c_itr->first << ", " << c_itr->second << ") ";
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
-    }
+    );
 }

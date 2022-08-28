@@ -3,6 +3,7 @@
 //#define __HIERARCHY__HPP
 
 #include "Patch.hpp"
+#include "debug.hpp"
 
 class Hierarchy {
 private:

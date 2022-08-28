@@ -8,6 +8,8 @@
 #include "disjointtrees.hpp"
 #include "grid.hpp"
 
+#include "debug.hpp"
+
 Grid<int>* discretize_points(char* filepath_in, double resolution, int discretization) {
     using namespace pdal;
 
@@ -21,13 +23,13 @@ Grid<int>* discretize_points(char* filepath_in, double resolution, int discretiz
     CustomFilter* filter = dynamic_cast<CustomFilter*>(factory.createStage("filters.customfilter"));
     Stage* writer = factory.createStage("writers.las");
 
-    std::cout << "Created stages" << std::endl;
+    DPRINT("-- Created stages...");
 
     Options options;
     options.add("filename", filepath_in);
     reader->setOptions(options);
 
-    std::cout << "-- Running pipeline..." << std::endl;
+    DPRINT("-- Running pipeline...");
 
     filter->withResolution(resolution);
     filter->withDiscretization(discretization);
@@ -36,7 +38,7 @@ Grid<int>* discretize_points(char* filepath_in, double resolution, int discretiz
     filter->prepare(table);
     filter->execute(table);
 
-    std::cout << "-- Finished running reader & filter" << std::endl;
+    DPRINT("-- Finished running reader & filter");
 
     auto grid = filter->getGrid();
     
@@ -48,7 +50,7 @@ Grid<int>* label_grid(Grid<int>* grid_levels) {
     DisjointPatches ds(*grid_levels, *grid_labels);
     ds.compute_patches();
 
-    std::cout << "Total number of patches = " << ds.size() << std::endl;
+    DPRINT("Total number of patches = " << ds.size());
 
     return grid_labels;
 }
@@ -69,10 +71,10 @@ Grid<int>* vector_test(Grid<int>* grid_levels, Grid<int>* grid_patches, float we
     map_cells_to_hierarchies(hierarchyContext, pdag);
     create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
-    std::cout << std::endl;
-    std::cout << "== Partitioned Edge List" << std::endl;
-    std::cout << "size: " << partitioned_edge_list.size() << std::endl;
-
+    DPRINT(
+        "== Partitioned Edge List" << std::endl
+        << "size: " << partitioned_edge_list.size()
+    );
 
     DisjointTrees dt;
     for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
@@ -98,17 +100,22 @@ Grid<int>* vector_test(Grid<int>* grid_levels, Grid<int>* grid_patches, float we
 
     Grid<int>* grid_hierarchy = new Grid<int>(grid_levels->width, grid_levels->height);
 
-    std::cout << "== Roots" << std::endl;
+    DPRINT("== Roots");
+
     auto roots = dt.roots();
 
     for (auto it = roots.begin(); it != roots.end(); ++it) {
         TreeID tree_id = *it;
-        std::cout << "  " << *it << std::endl;
+
+        DPRINT("  " << *it);
+
         auto hs = dt.hierarchies_from_tree(tree_id);
         std::set<int> patches_for_tree;
         std::set<Cell> cells_for_tree;
         for (auto hit = hs.begin(); hit != hs.end(); hit++) {
-            std::cout << "    " << *hit << std::endl;
+            
+            DPRINT("    " << *hit);
+            
             Hierarchy hierarchy = hierarchyContext.hierarchies[*hit];
             auto cells = hierarchy.get_adjusted_cells();
             cells_for_tree.insert(cells.begin(), cells.end());
@@ -127,8 +134,6 @@ Grid<int>* vector_test(Grid<int>* grid_levels, Grid<int>* grid_patches, float we
 }
 
 int main(int argc, char* argv[]) {
-    std::cout << "Hello, Main!";
-
     Grid<int>* grid_levels;
     Grid<int>* grid_patches;
     Grid<int>* grid_hierarchy;
@@ -150,7 +155,6 @@ int main(int argc, char* argv[]) {
     grid_patches = label_grid(grid_levels);
     std::cout << "-- Grid Hierarchy" << std::endl;
     grid_hierarchy = vector_test(grid_levels, grid_patches, weights);
-    std::cout << std::endl;
     std::cout << "All done!" << std::endl;
 
     std::cout << std::endl;

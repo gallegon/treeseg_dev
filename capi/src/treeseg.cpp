@@ -15,6 +15,8 @@
 #include "disjointtrees.hpp"
 #include "grid.hpp"
 
+#include "debug.hpp"
+
 
 
 static PyObject* discretize_points(PyObject* self, PyObject* args) {
@@ -43,13 +45,13 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
     CustomFilter* filter = dynamic_cast<CustomFilter*>(factory.createStage("filters.customfilter"));
     Stage* writer = factory.createStage("writers.las");
 
-    std::cout << "Created stages" << std::endl;
+    DPRINT("Created stages");
 
     Options options;
     options.add("filename", filepath_in);
     reader->setOptions(options);
 
-    std::cout << "-- Running pipeline..." << std::endl;
+    DPRINT("-- Running pipeline...");
 
     filter->withResolution(resolution);
     filter->withDiscretization(discretization);
@@ -58,7 +60,7 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
     filter->prepare(table);
     filter->execute(table);
 
-    std::cout << "-- Finished running reader & filter" << std::endl;
+    DPRINT("-- Finished running reader & filter");
 
     auto grid = filter->getGrid();
     const npy_intp dims[] = {grid->width, grid->height};
@@ -93,7 +95,7 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
     DisjointPatches ds(grid_levels, grid_labels);
     ds.compute_patches();
 
-    std::cout << "Total number of patches = " << ds.size() << std::endl;
+    DPRINT("Total number of patches = " << ds.size());
 
     return PyArray_Return(labels);
 }
@@ -146,9 +148,11 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     };
     create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
-    std::cout << std::endl;
-    std::cout << "== Partitioned Edge List" << std::endl;
-    std::cout << "size: " << partitioned_edge_list.size() << std::endl;
+    DPRINT(
+        std::endl
+        << "== Partitioned Edge List" << std::endl
+        << "size: " << partitioned_edge_list.size()
+    );
 
 
     DisjointTrees dt;
@@ -183,17 +187,19 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     Grid<int> hierarchy_grid(dims[0], dims[1], PyArray_DATA(hierarchy_labels));
 
-    std::cout << "== Roots" << std::endl;
+    DPRINT("== Roots");
     auto roots = dt.roots();
 
     for (auto it = roots.begin(); it != roots.end(); ++it) {
         TreeID tree_id = *it;
-        std::cout << "  " << *it << std::endl;
+        
+        DPRINT("  " << *it);
+        
         auto hs = dt.hierarchies_from_tree(tree_id);
         std::set<int> patches_for_tree;
         std::set<Cell> cells_for_tree;
         for (auto hit = hs.begin(); hit != hs.end(); hit++) {
-            std::cout << "    " << *hit << std::endl;
+            DPRINT("    " << *hit);
             Hierarchy hierarchy = hierarchyContext.hierarchies[*hit];
             auto cells = hierarchy.get_adjusted_cells();
             cells_for_tree.insert(cells.begin(), cells.end());
@@ -207,7 +213,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         }
     }
 
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     // Py_RETURN_NONE;
     return PyArray_Return(hierarchy_labels);

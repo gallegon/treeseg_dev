@@ -1,6 +1,7 @@
 #pragma once
 #include "Hierarchy.hpp"
 #include "grid.hpp"
+#include "debug.hpp"
 
 typedef std::pair<int, double> MaxInboundEdge;
 

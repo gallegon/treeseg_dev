@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <tuple>
 #include "grid.hpp"
+#include "debug.hpp"
 //#include <chrono>
 
 // #define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))

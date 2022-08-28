@@ -11,6 +11,7 @@
 #include "pdal/Streamable.hpp"
 
 #include "grid.hpp"
+#include "debug.hpp"
 
 namespace pdal {
 

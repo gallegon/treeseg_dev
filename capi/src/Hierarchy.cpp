@@ -99,13 +99,13 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
     int cellCount, heightDiff, hierarchyID, hierarchyCellCount = 0;
     std::pair<double, double> heightAdjustedCentroid;
 
-    std::cout << "Hierarchy context size: " << hierarchyContext.hierarchies.size() << std::endl;
+    DPRINT("Hierarchy context size: " << hierarchyContext.hierarchies.size());
     // Initialize some patch to use as the current patch.
     Patch patch(0, 0);
     for (hierIt = hierarchyContext.hierarchies.begin(); hierIt != hierarchyContext.hierarchies.end(); ++hierIt) {
         hierarchyID = hierIt->first;
         patchIDs = hierIt->second.getPatchIDs();
-        std::cout << "Hierarchy ID: " << hierarchyID << " Patches size: " << hierIt->second.getPatchIDs().size();
+        DPRINT("Hierarchy ID: " << hierarchyID << " Patches size: " << hierIt->second.getPatchIDs().size());
         // this is the meat of the height adjusted centroid calculation --
         // review 2.2.4 (6) from "The Paper".  This performs the summations that are
         // described in the equation mentioned.
@@ -146,7 +146,8 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
         hacX = hacNumeratorX / hacDenominator;
         hacY = hacNumeratorY / hacDenominator;
 
-        std::cout << " HAC(" << hacX << ", " << hacY << ")" << std::endl;
+        DPRINT(" HAC(" << hacX << ", " << hacY << ")");
+        
         // Set the height-adjusted centroid for the hierarchy
         hierIt->second.setHAC(hacX, hacY);
         hierIt->second.setCellCount(hierarchyCellCount);
@@ -164,8 +165,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
     // These will be the "local maxima" patches
     //std::map<int, Patch> parentless_patches = pdagContext.parentless_patches;
 
-    std::cout << "Num of parentless patches = " << pdagContext.parentless_patches.size() << std::endl;
-
+    DPRINT("Num of parentless patches = " << pdagContext.parentless_patches.size());
 
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor vertex_descriptor;
     typedef boost::property_map<DirectedGraph, boost::vertex_index_t>::type IdMap;
@@ -189,13 +189,15 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         distmap_vect(distvector.begin(), get(boost::vertex_index, pdagContext.graph));
 
 
-    // Some debug/trace variables.
-    int count = 0;
-    int total_count = pdagContext.parentless_patches.size() - 1;
-    // int one_percent_amount = floor(total_count * 0.01);
-    int percent_step = ceil(total_count * 0.05);
-    int next_count = percent_step;
-    int total_reachable = 0;
+    DVAR(
+        // Some debug/trace variables.
+        int count = 0;
+        int total_count = pdagContext.parentless_patches.size() - 1;
+        // int one_percent_amount = floor(total_count * 0.01);
+        int percent_step = ceil(total_count * 0.05);
+        int next_count = percent_step;
+        int total_reachable = 0;
+    );
 
     // These are for hierarchy creation
     int hierarchy_id = 1;
@@ -212,8 +214,8 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
         int vertex_id = it->first;
 
-        if (vertex_id < 0 || vertex_id > pdagContext.patches.size() - 1) {
-            std::cout << "WORKING WITH VERTEX: " << vertex_id << std::endl;
+        if (vertex_id < 0 || vertex_id > pdagContext.patches.size()) {
+            DPRINT("WORKING WITH VERTEX: " << vertex_id);
             // continue;
         }
 
@@ -250,7 +252,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
                 auto this_patch = pdagContext.patches.find((int)*vi);
                 if (this_patch == pdagContext.patches.end()) {
-                    std::cout << "Patch not found: " << this_patch->second.get_id() <<  " || " << (int) *vi << std::endl;
+                    DPRINT("Patch not found: " << this_patch->second.get_id() <<  " || " << (int) *vi);
                     continue;
                 }
                 levelDepth = hierarchy_level - this_patch->second.get_level();
@@ -258,7 +260,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
                 (pdagContext.patches.at((int) *vi)).add_hierarchy(hierarchy_id, hierarchyContext.connected_hierarchies);
                 h.add_patchID((int) *vi, std::make_pair(levelDepth, nodeDepth));
 
-                total_reachable += 1;
+                DEBUG(total_reachable += 1;);
             }
         }
 
@@ -283,23 +285,27 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
 
 
         // For debugging/tracing purposes; print an update every 1% of parentless patches processed.
-        if (count >= next_count || count == total_count) {
-            int p = ((float) count / total_count) * 100;
-            std::cout << "Patch ID: " << vertex_id << " :: " << (count + 1) << "/" << pdagContext.parentless_patches.size() << " = " << p << "%" << std::endl;
-            auto step_time = (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin).count()) / 1000000.0;
-            std::cout << "    -- Time since last update (seconds): " << step_time << std::endl;
-            next_count += percent_step;
-            begin = std::chrono::steady_clock::now();
-        }
+        DEBUG(
+            if (count >= next_count || count == total_count) {
+                int p = ((float) count / total_count) * 100;
+                std::cout << "Patch ID: " << vertex_id << " :: " << (count + 1) << "/" << pdagContext.parentless_patches.size() << " = " << p << "%" << std::endl;
+                auto step_time = (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - begin).count()) / 1000000.0;
+                std::cout << "    -- Time since last update (seconds): " << step_time << std::endl;
+                next_count += percent_step;
+                begin = std::chrono::steady_clock::now();
+            }
+            count += 1;
+        );
         hierarchies.at(hierarchy_id) = h;
-        count += 1;
         hierarchy_id++;
     }
 
     hierarchyContext.hierarchies = hierarchies;
     calculateHAC(pdagContext, hierarchyContext);
-    std::cout << "Total reachable nodes from parentless patches = " << total_reachable << std::endl;
-    std::cout << "Number of parentless patches = " << pdagContext.parentless_patches.size() << std::endl;
-    std::cout << "Average reachable nodes per parentless patch = " << ((float) total_reachable / pdagContext.parentless_patches.size()) << std::endl;
-    std::cout << std::endl;
+
+    DPRINT(
+        "Total reachable nodes from parentless patches = " << total_reachable << std::endl
+        << "Number of parentless patches = " << pdagContext.parentless_patches.size() << std::endl
+        << "Average reachable nodes per parentless patch = " << ((float) total_reachable / pdagContext.parentless_patches.size())
+    );
 }

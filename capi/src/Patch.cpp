@@ -279,7 +279,9 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
             }
         }
     }
-    std::cout << "Completed edge list" << std::endl;
+
+    DPRINT("Completed edge list");
+    
     // some abstraction for graph creation
     int parent, child;
     // add all the edges to the Boost graph container
