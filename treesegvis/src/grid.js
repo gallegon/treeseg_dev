@@ -15,8 +15,8 @@ function decodeImage(img, decoder) {
         }
     }
 
-    console.log("Decoded an image")
-    console.log(decoded);
+    // console.log("Decoded an image")
+    // console.log(decoded);
     return decoded;
 }
 
@@ -84,12 +84,16 @@ class Grid {
         this.display_image = display_decoder(img, this.data);
     }
 
+    contains(x, y) {
+        return x > 0 && y > 0 && x < this.ncols && y < this.nrows;
+    }
+
     colorAt(x, y) {
-        return this.display_img.get(x, y);
+        return this.contains(x, y) ? this.display_img.get(x, y) : color(0, 0, 0);
     }
 
     dataAt(x, y) {
-        return this.data[x][y];
+        return this.contains(x, y) ? this.data[x][y] : 0;
     }
 
     cellSize() {

@@ -1,31 +1,61 @@
-import sys
+import base64
+import json
 import os
+import socket
+import sys
+
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.append(os.path.abspath(os.path.join("..", "python")))
 from treesegmentation.ts_api import *
 
+
 class TSHandler(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        print("GET request!")
-        super().do_GET()
+    def __init__(self, *args, **kwargs):
+        # Serve files from the src/ directory
+        dir = os.fspath(os.path.join(os.getcwd(), "src"))
+        super().__init__(*args, **{**kwargs, "directory": dir})
     
     def do_POST(self):
-        data_len = len(self.headers["Content-Length"])
-        data = self.rfile(data_len)
-        print("=== POST REQUEST")
-        print("--- POST PATH")
-        print(self.path)
-        print("--- POST DATA")
-        print(data)
-        print("---")
+        # Only run on the appropriate request
+        if self.path != "/treeseg-run":
+            self.send_response_only(200)
+            self.end_headers()
+            return
         
-        # result = default_pipeline(context)
-        # print("Ran pipeline!")
-        super().do_POST()
+        # Parse JSON context object
+        data_len = int(self.headers["Content-Length"])
+        data = self.rfile.read(data_len)
+        obj = json.loads(data)
+
+        # Run the pipeline locally
+        result = default_pipeline(obj)
+
+        # Load images from disk
+        p_height = result["save_grid_path"]
+        p_patch = result["save_patches_path"]
+        p_hierarchy = result["save_partition_path"]
+        with open(p_height, "rb") as height, open(p_patch, "rb") as patch, open(p_hierarchy, "rb") as hierarchy:
+            # Convert image data to base 64 encoded string
+            data_height = str(base64.b64encode(height.read()))[2:-1]
+            data_patch = str(base64.b64encode(patch.read()))[2:-1]
+            data_hierarchy = str(base64.b64encode(hierarchy.read()))[2:-1]
+
+        # Send encoded image data to client
+        resp = json.dumps({
+            "elapsed_time": result["elapsed_time"],
+            "data-grid-height": data_height,
+            "data-grid-patch": data_patch,
+            "data-grid-hierarchy": data_hierarchy
+        })
+        self.wfile.write(bytes(resp, "utf-8"))
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
 
 
 def tsserver(port=8080):
+    # ThreadingHTTPServer allows KeyboardInterrupts to occur asynchronously.
     with ThreadingHTTPServer(("localhost", port), TSHandler) as server:
         server_host, server_port = server.server_address
         print(f"Tree segmentation server started on {server_host}:{server_port}")
@@ -34,5 +64,9 @@ def tsserver(port=8080):
         except KeyboardInterrupt:
             print("Stopping tree segmentation server")
 
+
 if __name__ == "__main__":
-    tsserver(8080)
+    if len(sys.argv) == 2:
+        tsserver(int(sys.argv[1]))
+    else:
+        tsserver()

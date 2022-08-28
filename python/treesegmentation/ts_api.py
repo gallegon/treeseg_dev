@@ -400,7 +400,7 @@ def handle_save_partition_raster(input_file_name, output_folder_path, labeled_pa
     print(f"    - Saved partition raster to \"{save_path}\"")
 
     return {
-        "png_raster_path": save_path
+        "save_partition_path": save_path
     }
 
 
@@ -424,6 +424,10 @@ def handle_save_patches_raster(input_file_name, output_folder_path, labeled_grid
 
     print(f"    - Saved patches raster to \"{save_path}\"")
 
+    return {
+        "save_patches_path": save_path
+    }
+
 
 def handle_save_grid_raster(input_file_name, output_folder_path, grid, discretization, save_grid_raster=False):
     if not save_grid_raster:
@@ -438,9 +442,13 @@ def handle_save_grid_raster(input_file_name, output_folder_path, grid, discretiz
 
     print(f"    - Saved grid raster to \"{save_path}\"")
 
+    return {
+        "save_grid_path": save_path
+    }
 
-def handle_label_point_cloud(input_file_path, input_file_name, output_folder_path, png_raster_path, bounds_xyz, scale_xyz, espg_string):
-    if not png_raster_path:
+
+def handle_label_point_cloud(input_file_path, input_file_name, output_folder_path, save_partition_path, bounds_xyz, scale_xyz, espg_string):
+    if not save_partition_path:
         return
 
     min_xyz, max_xyz = bounds_xyz
@@ -463,7 +471,7 @@ def handle_label_point_cloud(input_file_path, input_file_name, output_folder_pat
     las_output_path = os.path.join(output_folder_path, las_output_name)
 
     # spawn gdal_translate program to translate png to GeoTiff
-    translate_command = f'gdal_translate -of GTiff -a_srs {espg_string} -a_ullr {min_x} {min_y} {max_x} {max_y} "{png_raster_path}" "{gtiff_output_path}"'
+    translate_command = f'gdal_translate -of GTiff -a_srs {espg_string} -a_ullr {min_x} {min_y} {max_x} {max_y} "{save_partition_path}" "{gtiff_output_path}"'
     print("+++++++++++++++")
     print(translate_command)
     print("+++++++++++++++")

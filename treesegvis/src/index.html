@@ -99,13 +99,15 @@
                     Hierarchy label: <span id="display-selected-cell-hierarchy"></span>
                     <br>
 
-                    Contained patches[<span id="display-selected-contained-patches-count"></span>]: <span id="display-selected-contained-patches"></span>
+                    Contained patches[<span id="display-selected-contained-patches-count"></span>]:
+                    <br>
+                    <textarea name="display-selected-contained-patches" id="display-selected-contained-patches" cols="80" rows="5"></textarea>
                 </p>
             </div>
             <div id="treeseg-controls">
                 <h3>Pipeline context</h3>
                 <br>
-                <input type="button" value="Run Segmentation">
+                <input id="input-treeseg-run" type="button" value="Run Segmentation"> <span id="display-treeseg-status"></span>
                 <br>
                 <textarea name="input-treeseg-params" id="input-treeseg-params" cols="100" rows="20">
 {
