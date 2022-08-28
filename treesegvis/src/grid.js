@@ -25,9 +25,11 @@ function createDisplayImage(data) {
     let w = data.length;
     let h = data[0].length;
     let disp_img = createImage(w, h);
-    let next_r = Math.floor(10, random(255));
-    let next_g = Math.floor(10, random(255));
-    let next_b = Math.floor(10, random(255));
+    let col_min = 20;
+    let col_max = 235;
+    let next_r = Math.floor(random(col_min, col_max));
+    let next_g = Math.floor(random(col_min, col_max));
+    let next_b = Math.floor(random(col_min, col_max));
 
     disp_img.loadPixels();
     for (let i = 0; i < w; i++) {
@@ -40,9 +42,9 @@ function createDisplayImage(data) {
 
             if (!(value in palette)) {
                 palette[value] = [next_r, next_g, next_b];
-                next_r = Math.floor(random(10, 255));
-                next_g = Math.floor(random(10, 255));
-                next_b = Math.floor(random(10, 255));
+                next_r = Math.floor(random(col_min, col_max));
+                next_g = Math.floor(random(col_min, col_max));
+                next_b = Math.floor(random(col_min, col_max));
             }
 
             let [r, g, b] = palette[value];

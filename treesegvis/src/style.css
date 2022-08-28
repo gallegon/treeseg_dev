@@ -1,13 +1,21 @@
 #flex-container {
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
+}
+
+#flex-container > * > * {
+    flex: 1 100%;
 }
 
 #sketch-controls {
     margin: 0px 0px 0px 20px;
 }
 
-#sketch-canvas {
-    max-width: 600px;
-    max-height: 600px;
+@media all and (min-width: 600px) {
+}
+
+@media all and (min-width: 800px) {
+    #sketch-controls { order: 1; }
+    #treeseg-controls { order: 2; }
 }
