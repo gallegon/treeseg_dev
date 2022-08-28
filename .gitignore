@@ -1,11 +1,11 @@
 .vscode
 
 capi/build
+capi/dist
 capi/treeseg.egg-info
 
 python/__pycache__
 python/treesegmentation/__pycache__
-python/treesegmentation_output
 
 python/sample_data/ept*
 python/sample_data/VernonLA_306_nno.las
@@ -14,4 +14,4 @@ python/sample_data/s03450w06540_las.las
 python/sample_data/004_las.las
 python/sample_data/306_las.las
 
-treesegvis/treesegmentation_output
+treeseg_output
