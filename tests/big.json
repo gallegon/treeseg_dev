@@ -1,5 +1,5 @@
 {
-    "input_file_path": "sample_data/004_las.las",
+    "input_file_path": "../sample_data/004_las.las",
 
     "resolution": 1,
     "discretization": 256,

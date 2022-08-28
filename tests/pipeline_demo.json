@@ -1,10 +1,10 @@
 {
-    "input_file_path": "sample_data/hard_nno.las",
+    "input_file_path": "../sample_data/hard_nno.las",
 
-    "resolution": 0.5,
+    "resolution": 0.6,
     "discretization": 256,
     "min_height": 64,
-    "gaussian_sigma": 0.7,
+    "gaussian_sigma": 0.4,
 
     "weight_level_depth": 0.84,
     "weight_node_depth": 1.07,
@@ -13,10 +13,9 @@
     "weight_centroid_distance": 0.0,
     "weight_threshold": 0.7,
 
-    "output_folder_name": "../treeseg_output",
+    "espg_string": "EPSG:2027",
     "save_grid_raster": true,
     "save_patches_raster": true,
     "save_partition_raster": true,
-    "save_context_file": true,
-    "espg_string": "EPSG:2027"
+    "save_context_file": true
 }
