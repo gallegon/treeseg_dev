@@ -1,4 +1,6 @@
-@ECHO OFF
+@echo off
+
+setlocal
 
 pushd "%~dp0"\..\capi
 
