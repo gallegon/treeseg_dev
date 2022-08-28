@@ -3,6 +3,7 @@
 # capi/build
 # capi/dist
 capi/treeseg.egg-info
+capi/build/standalone
 
 python/__pycache__
 python/treesegmentation/__pycache__
