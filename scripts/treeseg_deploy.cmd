@@ -13,20 +13,32 @@ if %ERRORLEVEL% == 0 (
     echo == Successfully compiled module
     echo.
 
-    call python setup.py install
+    call python setup.py bdist
 
     if %ERRORLEVEL% == 0 (
         echo.
-        echo == Successfully deployed module
+        echo == Successfully built module distributable
         echo.
+
+        call python setup.py install
+         if %ERRORLEVEL% == 0 (
+            echo.
+            echo == Successuly deployed module
+            echo.
+         ) else (
+            echo.
+            echo == Failed to install module
+            echo.
+         )
+
     ) else (
         echo.
-        echo == Failed to deploy module
+        echo == Failed to build module
         echo.
     )
 ) else (
     echo.
-    echo == Compilation failed
+    echo == Failed to compile module
     echo.
 )
 
