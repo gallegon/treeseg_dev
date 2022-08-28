@@ -31,10 +31,22 @@ class Pipeline:
         successful result or an error.
     """
 
-    def __init__(self, verbose=False):
+    T_ARGS = (
+        "__context",
+        "__index",
+        "__name",
+        "__args",
+        "__kwargs",
+        "__params"
+    )
+
+    def __init__(self, param_handler=None):
         self.handlers = []
         self.transformers = []
-        self.verbose = True if verbose else False
+        self.param_handler = param_handler if param_handler else lambda p: print(f"Could not find '{p}' in pipeline context!")
+    
+    def __call__(self, *args, **kwargs):
+        return self.execute(*args, **kwargs)
 
     def then(self, handler):
         """Adds the next sequential stage(s) in this pipeline.
@@ -52,14 +64,17 @@ class Pipeline:
         
         return self
 
-    def intersperse(self, wrapper):
-        """Call the ``wrapper`` function on each stage of the pipeline.
+    def transform(self, transformer):
+        """Call the ``transformer`` function on each stage of the pipeline.
 
-        :param wrapper: Decorator like function to be applied to each handler function before execution.
+        :param transformer: Decorator like function to be applied to each handler function before execution.
 
         :return: Returns this pipeline. Allows ``.intersperse`` calls to be chained.
         """
-        self.transformers.append(wrapper)
+        try:
+            self.transformers.extend(transformer)
+        except TypeError:
+            self.transformers.append(transformer)
         return self
 
     def execute(self, initial):
@@ -76,13 +91,17 @@ class Pipeline:
         :return: The resulting context dictionary (string names to values).
         """
 
-        def identity(f, *args, **kwargs):
-            return f(*args, **kwargs)
-
+        def core(f, *args, **kwargs):
+            newkwargs = dict(kwargs)
+            for prop in Pipeline.T_ARGS:
+                if prop in newkwargs:
+                    del newkwargs[prop]
+            return f(*args, **newkwargs)
+        
         # Construct the transformer to apply to each handler function.
         # Start with the identity transformer so the last application can be on
         # the handler function itself, beginning the execution.
-        transformer = identity
+        transformer = core
         for t in self.transformers:
             transformer = t(transformer)
 
@@ -99,28 +118,42 @@ class Pipeline:
 
             acquired_params = dict()
             for param in handler_params:
+                # Prefer to grab from context if present
                 if param in context:
                     acquired_params[param] = context[param]
+                # Fallback to defaulted value if not in context
                 elif param in default_params:
                     acquired_params[param] = default_params[param]
+                # Handle special parameters
                 elif param == "_context":
                     acquired_params[param] = context
+                elif param == "_index":
+                    acquired_params[param] = stage
+                elif param == "_name":
+                    acquired_params[param] = handler.__name__
+                elif param == "_args":
+                    acquired_params[param] = handler_params[:len(default_values)]
+                elif param == "_kwargs":
+                    acquired_params[param] = default_params
+                elif param == "_params":
+                    acquired_params[param] = handler_params
+                # Requested parameter is not in context, not defaulted, and not a special parameter.
                 else:
-                    # Requested parameter is not in context, not defaulted, and not a special parameter.
-                    # Currently, passing None if param is neither defaulted not found in context.
-                    # Could throw, stop, or add a way to implement custom behavior here.
-                    print(f"Could not find '{param}' in pipeline context!")
-                    acquired_params[param] = None
-
-            if self.verbose:
-                param_list = map(lambda p: str(p) if p not in default_params else f"{p}={default_params[p]}", handler_params)
-                print(f"Executing stage [{stage}]: {handler.__name__}({', '.join(param_list)})")
-            else:
-                print(f"Executing stage [{stage}]: {handler.__name__}")
+                    acquired_params[param] = self.param_handler(param)
+            
+            # Parameters available *only* to transformer functions.
+            transformer_params = {
+                "__context": context,
+                "__index": stage,
+                "__name": handler.__name__,
+                "__args": handler_params[:len(default_values)],
+                "__kwargs": default_params,
+                "__params": handler_params
+            }
 
             try:
                 # Run the next handler with the appropriate parameters and apply any transforms.
-                result = transformer(handler, **acquired_params)
+                result = transformer(handler, **transformer_params, **acquired_params)
                 # Update the context object with the key/value pairs from result.
                 if isinstance(result, dict):
                     context.update(result)
@@ -129,13 +162,19 @@ class Pipeline:
                 print(f"Pipeline handler [{stage}] {handler.__name__} failed with exception.")
                 raise e
 
-            if self.verbose:
-                print()
-
         elapsed_time = time.time() - start_time
+        context["elapsed_time"] = elapsed_time
 
-        print(f"Pipeline completed {len(self.handlers)} stages in {elapsed_time} seconds.")
         return context
+
+
+def transform_print_stage_info(f):
+    def wrapper(*args, __params=None, __kwargs=None, __index=None, __name=None, **kwargs):
+        param_list = map(lambda p: str(p) if p not in __kwargs else f"{p}={__kwargs[p]}", __params)
+        print(f"Executing stage [{__index}]: {__name}({', '.join(param_list)})")
+        return f(*args, **kwargs)
+        
+    return wrapper
 
 
 def transform_print_runtime(f):
@@ -152,6 +191,14 @@ def transform_print_runtime(f):
         elapsed = timeit.default_timer() - start
         print(f"    - Finished in {elapsed:.2f} seconds")
         return result
+    return wrapper
+
+def transform_print_newline(f):
+    def wrapper(*args, **kwargs):
+        result = f(*args, **kwargs)
+        print()
+        return result
+    
     return wrapper
 
 
@@ -454,3 +501,35 @@ def handle_save_context_file(_context, input_file_name, output_folder_path, save
     with open(file_path, "w") as file:
         json.dump(writeable_values, file, indent=4, skipkeys=True)
     print(f"    -- Saved context file to {file_path}")
+
+
+
+# Default/intended ordering of the pipeline operations.
+# Can be changed or extended easily.
+default_pipeline = Pipeline() \
+    .then([
+        handle_create_file_names_and_paths,
+        handle_read_las_data,
+        handle_las2img,
+        handle_gaussian_filter,
+        handle_grid_height_cutoff,
+        handle_save_grid_raster,
+        handle_compute_patches,
+        handle_patches_to_dict,
+        handle_compute_patches_labeled_grid,
+        handle_compute_patch_neighbors,
+        handle_save_patches_raster,
+        handle_compute_hierarchies,
+        handle_find_connected_hierarchies,
+        handle_calculate_edge_weight,
+        handle_partition_graph,
+        handle_trees_to_labeled_grid,
+        handle_save_partition_raster,
+        handle_label_point_cloud,
+        handle_save_context_file
+    ]) \
+    .transform([
+        transform_print_stage_info,
+        transform_print_runtime,
+        transform_print_newline
+    ])

@@ -6,53 +6,8 @@ To use from the command line, run: ``ts_cli.py context_file``
 import json
 import sys
 
-from treesegmentation.treeseg_lib import *
-
+from treesegmentation.ts_api import default_pipeline
 from integration_with_c import c_pipeline
-
-
-def run_treesegmentation(initial_context):
-    """Default algorithm pipeline for tree segmentation.
-
-    :param initial_context: Dictionary mapping of string names to values.
-        To be run as the initial context of the pipeline.
-
-    :return: Resulting context dictionary (string to value) from the pipeline after execution.
-    """
-
-    # Default/intended ordering of the pipeline operations.
-    # Can be changed or extended easily.
-    algorithm = Pipeline(verbose=True).then([
-        handle_create_file_names_and_paths,
-        handle_read_las_data,
-        handle_las2img,
-        handle_gaussian_filter,
-        handle_grid_height_cutoff,
-        handle_save_grid_raster,
-        handle_compute_patches,
-        handle_patches_to_dict,
-        handle_compute_patches_labeled_grid,
-        handle_compute_patch_neighbors,
-        handle_save_patches_raster,
-        handle_compute_hierarchies,
-        handle_find_connected_hierarchies,
-        handle_calculate_edge_weight,
-        handle_partition_graph,
-        handle_trees_to_labeled_grid,
-        handle_save_partition_raster,
-        handle_label_point_cloud,
-        handle_save_context_file
-    ])
-    
-    # Pipeline with integrated C++ stages
-    algorithm = c_pipeline
-
-    # Time and print the elapsed execution time after each stage in the pipeline.
-    # Only if verbose.
-    if algorithm.verbose:
-        algorithm.intersperse(transform_print_runtime)
-
-    return algorithm.execute(initial_context)
 
 
 def load_context_data(file_path):
@@ -72,8 +27,10 @@ def load_context_data(file_path):
 def main():
     args = sys.argv[1:]
     if len(args) == 1:
-        settings = load_context_data(args[0])
-        run_treesegmentation(settings)
+        context = load_context_data(args[0])
+        result = default_pipeline(context)
+        elapsed_time = result["elapsed_time"]
+        print(f"Pipeline completed {len(default_pipeline.handlers)} stages in {elapsed_time} seconds.")
     else:
         print("ts_cli expects a path to a context file path as its only argument.")
         print("Usage:")

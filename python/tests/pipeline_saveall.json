@@ -1,17 +1,17 @@
 {
     "input_file_path": "sample_data/hard_nno.las",
 
-    "resolution": 1,
-    "discretization": 16,
-    "min_height": 4,
-    "gaussian_sigma": 0.4,
+    "resolution": 0.5,
+    "discretization": 256,
+    "min_height": 64,
+    "gaussian_sigma": 0.7,
 
-    "weight_level_depth": 0.22,
-    "weight_node_depth": 0.22,
-    "weight_shared_ratio": 0.22,
-    "weight_top_distance": 0.22,
-    "weight_centroid_distance": 1,
-    "weight_threshold": 0.22,
+    "weight_level_depth": 0.84,
+    "weight_node_depth": 1.07,
+    "weight_shared_ratio": -0.11,
+    "weight_top_distance": 0.77,
+    "weight_centroid_distance": 0.0,
+    "weight_threshold": 0.7,
 
     "espg_string": "EPSG:2027",
     "save_grid_raster": true,

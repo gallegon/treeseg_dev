@@ -1,4 +1,4 @@
-from treesegmentation.treeseg_lib import *
+from treesegmentation.ts_api import *
 
 import treeseg as ts
 import os
@@ -60,7 +60,7 @@ def handle_read_and_discretize_points(input_file_path, resolution, discretizatio
         "grid": grid
     }
 
-c_pipeline = Pipeline(verbose=True).then([
+c_pipeline = Pipeline().then([
     handle_create_file_names_and_paths,
     handle_read_and_discretize_points,
     handle_gaussian_filter,
