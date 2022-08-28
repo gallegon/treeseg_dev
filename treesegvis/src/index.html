@@ -73,36 +73,66 @@
                     </tr>
                 </table>
 
-                <h3>
-                    == Mouse
-                </h3>
-                <p>
-                    Cell coordinates: <span id="display-mouse-cell-coords"></span>
-                    <br>
-                    Height level: <span id="display-mouse-cell-height"></span>
-                    <br>
-                    Patch label: <span id="display-mouse-cell-patch"></span>
-                    <br>
-                    Hierarchy label: <span id="display-mouse-cell-hierarchy"></span>
-                </p>
-
-                <h3>
-                    == Selected
-                </h3>
-                <p>
-                    Cell coordinates: <span id="display-selected-cell-coords"></span>
-                    <br>
-                    Height level: <span id="display-selected-cell-height"></span>
-                    <br>
-                    Patch label: <span id="display-selected-cell-patch"></span>
-                    <br>
-                    Hierarchy label: <span id="display-selected-cell-hierarchy"></span>
-                    <br>
-
-                    Contained patches[<span id="display-selected-contained-patches-count"></span>]:
-                    <br>
-                    <textarea name="display-selected-contained-patches" id="display-selected-contained-patches" cols="80" rows="5"></textarea>
-                </p>
+                <table id="display-info" style="width: 700px;">
+                    <tr>
+                        <th colspan="2">
+                            <h3>
+                                == Selected
+                            </h3>
+                        </th>
+                        <th colspan="2">
+                            <h3>
+                                == Mouse
+                            </h3>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td style="width: 25%;">
+                            <p>
+                                Cell coordinates:
+                                <br>
+                                Height level:
+                                <br>
+                                Patch label:
+                                <br>
+                                Hierarchy label:
+                            </p>
+                        </td>
+                        <td style="width: 25%;">
+                            <span id="display-selected-cell-coords"></span>
+                            <br>
+                            <span id="display-selected-cell-height"></span>
+                            <br>
+                            <span id="display-selected-cell-patch"></span>
+                            <br>
+                            <span id="display-selected-cell-hierarchy"></span>
+                        </td>
+                        <td style="width: 25%;">
+                            <p>
+                                Cell coordinates:
+                                <br>
+                                Height level:
+                                <br>
+                                Patch label:
+                                <br>
+                                Hierarchy label:
+                            </p>
+                        </td>
+                        <td style="width: 25%;">
+                            <span id="display-mouse-cell-coords"></span>
+                            <br>
+                            <span id="display-mouse-cell-height"></span>
+                            <br>
+                            <span id="display-mouse-cell-patch"></span>
+                            <br>
+                            <span id="display-mouse-cell-hierarchy"></span>
+                        </td>
+                    </tr>
+                </table>
+                <br>
+                Contained patches[<span id="display-selected-contained-patches-count"></span>]:
+                <br>
+                <textarea name="display-selected-contained-patches" id="display-selected-contained-patches" cols="80" rows="5"></textarea>
             </div>
             <div id="treeseg-controls">
                 <h3>Pipeline context</h3>
@@ -120,17 +150,18 @@
 
     "weight_level_depth": 0.84,
     "weight_node_depth": 1.07,
-    "weight_shared_ratio": -0.11,
+    "weight_shared_ratio": 0.1,
     "weight_top_distance": 0.77,
     "weight_centroid_distance": 0.0,
     "weight_threshold": 0.7,
 
-    "espg_string": "EPSG:2027",
+    "output_folder_name": "../treeseg_output",
     "save_grid_raster": true,
     "save_patches_raster": true,
     "save_partition_raster": true,
-    "save_context_file": true
-}
+    "save_context_file": true,
+    "espg_string": "EPSG:2027"
+}                    
                 </textarea>
             </div>
         </div>

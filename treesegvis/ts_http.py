@@ -6,8 +6,10 @@ import sys
 
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
+# Change module search path at runtime to find Python module.
 sys.path.append(os.path.abspath(os.path.join("..", "python")))
 from treesegmentation.ts_api import *
+from integration_with_c import c_pipeline
 
 
 class TSHandler(SimpleHTTPRequestHandler):
@@ -26,10 +28,11 @@ class TSHandler(SimpleHTTPRequestHandler):
         # Parse JSON context object
         data_len = int(self.headers["Content-Length"])
         data = self.rfile.read(data_len)
-        obj = json.loads(data)
+        context = json.loads(data)
 
         # Run the pipeline locally
-        result = default_pipeline(obj)
+        # result = default_pipeline(obj)
+        result = c_pipeline(context)
 
         # Load images from disk
         p_height = result["save_grid_path"]
@@ -48,10 +51,10 @@ class TSHandler(SimpleHTTPRequestHandler):
             "data-grid-patch": data_patch,
             "data-grid-hierarchy": data_hierarchy
         })
-        self.wfile.write(bytes(resp, "utf-8"))
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.end_headers()
+        self.wfile.write(bytes(resp, "utf-8"))
 
 
 def tsserver(port=8080):

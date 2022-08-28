@@ -28,3 +28,7 @@ h3 {
     #sketch-controls { order: 1; }
     #treeseg-controls { order: 2; }
 }
+
+#display-info {
+    width: 600px;
+}

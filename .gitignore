@@ -1,17 +1,17 @@
 .vscode
 
-capi/build
-capi/dist
+# capi/build
+# capi/dist
 capi/treeseg.egg-info
 
 python/__pycache__
 python/treesegmentation/__pycache__
 
-python/sample_data/ept*
-python/sample_data/VernonLA_306_nno.las
-python/sample_data/s03450w06540_nnoc.las
-python/sample_data/s03450w06540_las.las
-python/sample_data/004_las.las
-python/sample_data/306_las.las
+sample_data/ept*
+sample_data/VernonLA_306_nno.las
+sample_data/s03450w06540_nnoc.las
+sample_data/s03450w06540_las.las
+sample_data/004_las.las
+sample_data/306_las.las
 
 treeseg_output
