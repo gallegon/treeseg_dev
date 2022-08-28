@@ -14,7 +14,7 @@
 
 `server_start` Start the tree segmentation HTTP local server.
 
-`standalone_run` Run the standalone (no Python/Numpy) verion of the project.
+`standalone_run` Run the standalone (no Python/Numpy) verion of the project. Currently depends on MSVC for compilation.
 
 
 ## Development Scripts
