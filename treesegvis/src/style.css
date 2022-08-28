@@ -30,5 +30,13 @@ h3 {
 }
 
 #display-info {
-    width: 600px;
+    width: 500px;
+}
+
+#display-info > * > tr > th {
+    text-align: left;
+}
+
+#display-info > * > tr > td {
+    width: 25%;
 }
