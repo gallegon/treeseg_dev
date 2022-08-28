@@ -70,4 +70,9 @@ c_pipeline = Pipeline().then([
     handle_save_patches_raster,
     handle_vector_test,
     handle_save_partition_raster
+]) \
+.transform([
+    transform_print_stage_info,
+    transform_print_runtime,
+    transform_print_newline
 ])

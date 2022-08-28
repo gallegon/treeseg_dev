@@ -28,7 +28,7 @@ def main():
     args = sys.argv[1:]
     if len(args) == 1:
         context = load_context_data(args[0])
-        result = default_pipeline(context)
+        result = c_pipeline(context)
         elapsed_time = result["elapsed_time"]
         print(f"Pipeline completed {len(default_pipeline.handlers)} stages in {elapsed_time} seconds.")
     else:
