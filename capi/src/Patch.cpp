@@ -291,8 +291,16 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
     for (set_iter = connected_patches.begin(); set_iter != connected_patches.end(); ++set_iter) {
         parent = set_iter->first;
         child = set_iter->second;
+
         std::cout << "(" << parent << ", " << child << ")" << std::endl;
-        boost::add_edge(parent, child, 1, context.graph);
+        if (parent == child) {
+            boost::add_edge(parent, child, 0, context.graph);
+        }
+        else {
+            boost::add_edge(parent, child, 1, context.graph);
+        }
+        
+
     }
 
     // Moved to Hierarchy
