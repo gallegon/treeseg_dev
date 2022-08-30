@@ -15,6 +15,8 @@
 #include "disjointtrees.hpp"
 #include "grid.hpp"
 
+#include "debug.hpp"
+
 
 
 static PyObject* discretize_points(PyObject* self, PyObject* args) {
@@ -43,13 +45,13 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
     CustomFilter* filter = dynamic_cast<CustomFilter*>(factory.createStage("filters.customfilter"));
     Stage* writer = factory.createStage("writers.las");
 
-    std::cout << "Created stages" << std::endl;
+    DPRINT("Created stages");
 
     Options options;
     options.add("filename", filepath_in);
     reader->setOptions(options);
 
-    std::cout << "-- Running pipeline..." << std::endl;
+    DPRINT("-- Running pipeline...");
 
     filter->withResolution(resolution);
     filter->withDiscretization(discretization);
@@ -58,9 +60,14 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
     filter->prepare(table);
     filter->execute(table);
 
-    std::cout << "-- Finished running reader & filter" << std::endl;
+    DPRINT("-- Finished running reader & filter");
 
-    PyArrayObject* discretized_grid = filter->getGrid();
+    auto grid = filter->getGrid();
+    const npy_intp dims[] = {grid->width, grid->height};
+
+
+    PyArrayObject* discretized_grid = (PyArrayObject*) PyArray_SimpleNewFromData(2, dims, NPY_INT, grid->data);
+
     return PyArray_Return(discretized_grid);
 }
 
@@ -88,7 +95,7 @@ static PyObject* label_grid(PyObject* self, PyObject* args) {
     DisjointPatches ds(grid_levels, grid_labels);
     ds.compute_patches();
 
-    std::cout << "Total number of patches = " << ds.size() << std::endl;
+    DPRINT("Total number of patches = " << ds.size());
 
     return PyArray_Return(labels);
 }
@@ -126,16 +133,26 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     Grid<int> labels(dims[0], dims[1], PyArray_DATA(arrayLabels));
     Grid<int> levels(dims[0], dims[1], PyArray_DATA(arrayGrid));
 
-    create_patches(labels, levels, ddims, pdag);
+    create_patches(labels, levels, pdag);
     compute_hierarchies(pdag, hierarchyContext);
     //calculateHAC(pdag, hierarchyContext);
     adjust_patches(hierarchyContext, pdag);
     map_cells_to_hierarchies(hierarchyContext, pdag);
-    create_HDAG(partitioned_edge_list, hierarchyContext, pdag, arrayParams);
+    float weights[6] = {
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 0))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 1))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 2))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 3))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 4))),
+        *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 5)))
+    };
+    create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
-    std::cout << std::endl;
-    std::cout << "== Partitioned Edge List" << std::endl;
-    std::cout << "size: " << partitioned_edge_list.size() << std::endl;
+    DPRINT(
+        std::endl
+        << "== Partitioned Edge List" << std::endl
+        << "size: " << partitioned_edge_list.size()
+    );
 
 
     DisjointTrees dt;
@@ -170,17 +187,19 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     Grid<int> hierarchy_grid(dims[0], dims[1], PyArray_DATA(hierarchy_labels));
 
-    std::cout << "== Roots" << std::endl;
+    DPRINT("== Roots");
     auto roots = dt.roots();
 
     for (auto it = roots.begin(); it != roots.end(); ++it) {
         TreeID tree_id = *it;
-        std::cout << "  " << *it << std::endl;
+        
+        DPRINT("  " << *it);
+        
         auto hs = dt.hierarchies_from_tree(tree_id);
         std::set<int> patches_for_tree;
         std::set<Cell> cells_for_tree;
         for (auto hit = hs.begin(); hit != hs.end(); hit++) {
-            std::cout << "    " << *hit << std::endl;
+            DPRINT("    " << *hit);
             Hierarchy hierarchy = hierarchyContext.hierarchies[*hit];
             auto cells = hierarchy.get_adjusted_cells();
             cells_for_tree.insert(cells.begin(), cells.end());
@@ -194,7 +213,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         }
     }
 
-    std::cout << std::endl;
+    // std::cout << std::endl;
 
     // Py_RETURN_NONE;
     return PyArray_Return(hierarchy_labels);
@@ -209,14 +228,14 @@ static PyMethodDef treesegMethods[] = {
 
 static PyModuleDef treesegModule = {
     PyModuleDef_HEAD_INIT,
-    "treeseg",
+    "treeseg_ext",
         "Tree segmentation documentation.\n"
         "Now it's in C!",
     -1,
     treesegMethods
 };
 
-PyMODINIT_FUNC PyInit_treeseg(void) {
+PyMODINIT_FUNC PyInit_treeseg_ext(void) {
     PyObject* module;
     // Normal Python functions already specified in treesegModule definition.
     module = PyModule_Create(&treesegModule);

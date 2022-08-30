@@ -70,7 +70,7 @@ HierarchyPair get_direction(Hierarchy* h1, Hierarchy* h2) {
 
 void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
                  HierarchyData& hierarchy_context, PdagData& pdag_context,
-                 PyArrayObject* weights) {
+                 float weights[6]) {
     // Calculate HAC for every hierarchy
     // adjust patches
     //      - map each patch to a hierarchy
@@ -78,7 +78,8 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
     Hierarchy *h1, *h2;
     int h1_id, h2_id;
     
-    double weight_threshold = *((float *) PyArray_GETPTR1(weights, 5));
+    // double weight_threshold = *((float *) PyArray_GETPTR1(weights, 5));
+    double weight_threshold = weights[5];
 
     //std::vector<DirectedWeightedEdge> edges;
 
@@ -198,11 +199,16 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         double edge_weight;
 
         // Get the weights from the NumPy array object
-        ld_weight = *((float *) PyArray_GETPTR1(weights, 0));
-        nd_weight = *((float *) PyArray_GETPTR1(weights, 1));
-        sr_weight = *((float *) PyArray_GETPTR1(weights, 2));
-        td_weight = *((float *) PyArray_GETPTR1(weights, 3));
-        cd_weight = *((float *) PyArray_GETPTR1(weights, 4));
+        // ld_weight = *((float *) PyArray_GETPTR1(weights, 0));
+        // nd_weight = *((float *) PyArray_GETPTR1(weights, 1));
+        // sr_weight = *((float *) PyArray_GETPTR1(weights, 2));
+        // td_weight = *((float *) PyArray_GETPTR1(weights, 3));
+        // cd_weight = *((float *) PyArray_GETPTR1(weights, 4));
+        ld_weight = weights[0];
+        nd_weight = weights[1];
+        sr_weight = weights[2];
+        td_weight = weights[3];
+        cd_weight = weights[4];
         // std::cout << "Weights: " << ld_weight << ", " << nd_weight << ", " << sr_weight << ", " << td_weight << ", " << cd_weight << std::endl;
         // std::cout << "Stats:   " << min_ld << ", " << min_nd << ", " << shared_cell_count << ", " << top_distance << ", " << centroid_distance << std::endl;
         ld_score = 1 / min_ld;
@@ -221,7 +227,7 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
                       (cd_weight * cd_score);
         //std::cout << "(" << h1_id << ", " << h2_id << ") weight: " << edge_weight << std::endl;
 
-        std::cout << std::endl;
+        // std::cout << std::endl;
 
         int parent = edge.first;
         int child = edge.second;
@@ -246,8 +252,10 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
 
     }
 
-    std::cout << std::endl;
-    std::cout << "Maximal inbound edges list" << std::endl;
+    // std::cout << std::endl;
+    
+    DPRINT("Maximal inbound edges list");
+    
     // Create a list of edges for the partitioend graph
     int parent, child;
     double weight;
@@ -257,7 +265,7 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         child = mie_it->first;
         weight = mie_it->second.second;
         edges.push_back(std::make_tuple(parent, child, weight));
-        std::cout << "(" << parent << ", " << child << ") Weight: " << weight << std::endl;
+        DPRINT("(" << parent << ", " << child << ") Weight: " << weight);
     }
 }
 
@@ -337,15 +345,15 @@ void map_cells_to_hierarchies(struct HierarchyData& hierarchyContext, struct Pda
         }
     }
 
-    std::map<int, Hierarchy>::iterator hier_map_it;
-
-
-    for (hier_map_it = hierarchies->begin(); hier_map_it != hierarchies->end(); ++hier_map_it) {
-        cells = hier_map_it->second.get_adjusted_cells();
-        std::cout << "Hierachy ID: " << hier_map_it->first << " Cells: ";
-        for (c_itr = cells.begin(); c_itr != cells.end(); ++c_itr) {
-            std::cout << "(" << c_itr->first << ", " << c_itr->second << ") ";
+    DEBUG(
+        std::map<int, Hierarchy>::iterator hier_map_it;
+        for (hier_map_it = hierarchies->begin(); hier_map_it != hierarchies->end(); ++hier_map_it) {
+            cells = hier_map_it->second.get_adjusted_cells();
+            std::cout << "Hierachy ID: " << hier_map_it->first << " Cells: ";
+            for (c_itr = cells.begin(); c_itr != cells.end(); ++c_itr) {
+                std::cout << "(" << c_itr->first << ", " << c_itr->second << ") ";
+            }
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
-    }
+    );
 }

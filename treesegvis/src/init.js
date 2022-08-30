@@ -2,6 +2,7 @@ function initEventHandler(signature, eventName, callback) {
     let elem = typeof(signature) === "string"
         ? document.querySelector(signature)
         : signature;
+    // console.log("Init: " + signature);
     elem.addEventListener(eventName, event => callback(elem, event));
 }
 
@@ -26,7 +27,7 @@ function initFileInput(grid_type, data_decoder, display_decoder) {
 }
 
 function initSketchInterface() {
-    console.log("Loading input listeners!");
+    // console.log("Loading input listeners!");
 
     initFileInput("height", (r, g, b) => 255 - r, img => img);
     initFileInput("patch", (r, g, b) => (r << 16) + (g << 8) + b, (img, data) => createDisplayImage(data));
@@ -47,6 +48,61 @@ function initSketchInterface() {
                 default:
                     break;
             }
+        });
+    });
+
+    let status = document.getElementById("display-treeseg-status");
+    initEventHandler("#input-treeseg-run", "click", () => {
+        // console.log("Clicked!");
+        status.innerHTML = "Running..."
+        fetch("/treeseg-run", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: document.getElementById("input-treeseg-params").value
+        })
+        .then(data => data.json())
+        .then(data => {
+            // console.log(data);
+            let elapsed = data["elapsed_time"]
+            status.innerHTML = "Finished in " + elapsed + " seconds"
+
+            let src_height = "data:image/png;base64," + data["data-grid-height"]
+            loadImage(src_height, img => {
+                // console.log("Loaded an image!");
+                // console.log(img.width + " x " + img.height);
+                let w = img.width;
+                let h = img.height;
+                let grid = new Grid(w, h, img, (r, g, b) => 255 - r, img => img);
+                loaded_grids["height"] = grid;
+                mask_hierarchy = null;
+            });
+
+            let src_patch = "data:image/png;base64," + data["data-grid-patch"]
+            loadImage(src_patch, img => {
+                // console.log("Loaded an image!");
+                // console.log(img.width + " x " + img.height);
+                let w = img.width;
+                let h = img.height;
+                let grid = new Grid(w, h, img, (r, g, b) => (r << 16) + (g << 8) + b, (img, data) => createDisplayImage(data));
+                loaded_grids["patch"] = grid;
+                mask_hierarchy = null;
+            });
+
+            let src_hierarchy = "data:image/png;base64," + data["data-grid-hierarchy"]
+            loadImage(src_hierarchy, img => {
+                // console.log("Loaded an image!");
+                // console.log(img.width + " x " + img.height);
+                let w = img.width;
+                let h = img.height;
+                let grid = new Grid(w, h, img, (r, g, b) => (r << 16) + (g << 8) + b, (img, data) => createDisplayImage(data));
+                loaded_grids["hierarchy"] = grid;
+                mask_hierarchy = null;
+                let radio = document.getElementById("input-show-grid-hierarchy");
+                radio.checked = true;
+                radio.dispatchEvent(new Event("change"));
+            });
         });
     });
 }

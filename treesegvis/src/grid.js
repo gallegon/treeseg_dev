@@ -15,8 +15,8 @@ function decodeImage(img, decoder) {
         }
     }
 
-    console.log("Decoded an image")
-    console.log(decoded);
+    // console.log("Decoded an image")
+    // console.log(decoded);
     return decoded;
 }
 
@@ -25,10 +25,21 @@ function createDisplayImage(data) {
     let w = data.length;
     let h = data[0].length;
     let disp_img = createImage(w, h);
-    let next_r = Math.floor(10, random(255));
-    let next_g = Math.floor(10, random(255));
-    let next_b = Math.floor(10, random(255));
+    // let next_r = Math.floor(random(col_min, col_max));
+    // let next_g = Math.floor(random(col_min, col_max));
+    // let next_b = Math.floor(random(col_min, col_max));
 
+    let sample = (x, y, offset) => {
+        let scale = 0.09;
+        let col_min = 20;
+        let col_max = 235;
+        let nval = noise(offset + x * scale, offset + y * scale);
+        return Math.floor(map(nval, 0, 1, col_min, col_max));
+    }
+
+    let next_col = (x, y) => [sample(x, y, w), sample(x, y, 2 * w), sample(x, y, 3 * w)];
+
+    noiseSeed(0xBEEFCAFE);
     disp_img.loadPixels();
     for (let i = 0; i < w; i++) {
         for (let j = 0; j < h; j++) {
@@ -39,10 +50,7 @@ function createDisplayImage(data) {
             }
 
             if (!(value in palette)) {
-                palette[value] = [next_r, next_g, next_b];
-                next_r = Math.floor(random(10, 255));
-                next_g = Math.floor(random(10, 255));
-                next_b = Math.floor(random(10, 255));
+                palette[value] = next_col(i, j);
             }
 
             let [r, g, b] = palette[value];
@@ -82,12 +90,16 @@ class Grid {
         this.display_image = display_decoder(img, this.data);
     }
 
+    contains(x, y) {
+        return x > 0 && y > 0 && x < this.ncols && y < this.nrows;
+    }
+
     colorAt(x, y) {
-        return this.display_img.get(x, y);
+        return this.contains(x, y) ? this.display_img.get(x, y) : color(0, 0, 0);
     }
 
     dataAt(x, y) {
-        return this.data[x][y];
+        return this.contains(x, y) ? this.data[x][y] : 0;
     }
 
     cellSize() {

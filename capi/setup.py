@@ -6,10 +6,10 @@ import os
 pdal_include_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "include")
 pdal_library_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "lib")
 
-treeseg_module = Extension("treeseg",
+treeseg_ext_module = Extension("treeseg_ext",
                     # All .cpp source files to be compiled (in the src directory).
-                    sources = [os.path.join("src", s) for s in [
-                        "treeseg.cpp",
+                    sources = [ os.path.join("src", s) for s in [
+                        "treeseg_ext.cpp",
                         "Patch.cpp",
                         "disjointpatches.cpp",
                         "pdalfilter.cpp",
@@ -40,7 +40,7 @@ treeseg_module = Extension("treeseg",
                     ])
 
 
-setup(name = "treeseg",
+setup(name = "treeseg_ext",
     version = "1.0",
     description = "Tree segmentation in C!",
-    ext_modules = [treeseg_module])
+    ext_modules = [ treeseg_ext_module ])

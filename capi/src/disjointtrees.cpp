@@ -1,7 +1,7 @@
 #include "disjointtrees.hpp"
 
 DisjointTrees::DisjointTrees() {
-
+    
 }
 
 TreeID DisjointTrees::make_tree(int hierarchy_id) {
