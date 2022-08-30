@@ -1,6 +1,6 @@
 from treesegmentation.ts_api import *
+import treeseg_ext as ts
 
-import treeseg as ts
 import os
 
 
