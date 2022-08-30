@@ -19,8 +19,10 @@ def handle_vector_test(grid, labeled_grid, weight_level_depth,
                                  weight_top_distance, weight_centroid_distance, weight_threshold):
     print("Vector test begin!")
 
+    dt = np.dtype('int32')
+
     weight_params = [weight_level_depth, weight_node_depth, weight_shared_ratio, weight_top_distance, weight_centroid_distance, weight_threshold]
-    hierarchy_labels = ts.vector_test(grid, labeled_grid, weight_params)
+    hierarchy_labels = ts.vector_test(grid.astype(dt), labeled_grid.astype(dt), weight_params)
     
     print("Vector test end!")
 
