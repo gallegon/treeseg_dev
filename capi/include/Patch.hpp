@@ -65,6 +65,8 @@ struct PdagData {
     DirectedGraph graph;
 };
 
+std::vector<Cell> get_valid_neighbors(int i, int j, int* dimensions);
+
 std::vector<int> get_neighbors(int i, int j, int* dimension,
                                Grid<int>& labels, Grid<int>& levels);
 
