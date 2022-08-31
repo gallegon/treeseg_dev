@@ -148,19 +148,23 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     };
     create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
+    for (auto p_itr = pdag.patches.begin(); p_itr != pdag.patches.end(); ++p_itr ) {
+        std::cout << "Patch: " << p_itr->second.get_id() << " closest hierarchy: " << p_itr->second.get_closest_hierarchy() << std::endl;
+    }
+
+
     DPRINT(
         std::endl
         << "== Partitioned Edge List" << std::endl
         << "size: " << partitioned_edge_list.size()
     );
 
-
     DisjointTrees dt;
     for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
         int parent_id = std::get<0>(*vit);
         int child_id = std::get<1>(*vit);
         double weight = std::get<2>(*vit);
-        // std::cout << "(parent=" << parent_id << ", child=" << child_id << ", weight=" << weight << ")" << std::endl;
+        std::cout << "(parent=" << parent_id << ", child=" << child_id << ", weight=" << weight << ")" << std::endl;
 
         // Hierarchy parent = hierarchyContext.hierarchies[parent_id];
         // Hierarchy child = hierarchyContext.hierarchies[child_id];
