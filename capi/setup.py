@@ -2,9 +2,16 @@ import numpy as np
 from numpy.distutils.core import setup, Extension
 
 import os
+import platform
 
 pdal_include_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "include")
 pdal_library_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "lib")
+
+
+if platform.system() == "Windows":
+    extra_compile_args = []
+else:
+    extra_compile_args = ["-ggdb", "-fno-inline-functions", "-O0"]
 
 treeseg_ext_module = Extension("treeseg_ext",
                     # All .cpp source files to be compiled (in the src directory).
@@ -35,9 +42,7 @@ treeseg_ext_module = Extension("treeseg_ext",
                         "pdalcpp",
                         "pdal_util"
                     ],
-                    extra_compile_args=[
-                        "-g"
-                    ])
+                    extra_compile_args = extra_compile_args)
 
 
 setup(name = "treeseg_ext",
