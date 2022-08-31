@@ -152,6 +152,40 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         std::cout << "Patch: " << p_itr->second.get_id() << " closest hierarchy: " << p_itr->second.get_closest_hierarchy() << std::endl;
     }
 
+    std::set<int> mapped_hierarchies;
+
+    for (auto it = partitioned_edge_list.begin(); it != partitioned_edge_list.end(); ++it) {
+        auto parent_id = std::get<0>(*it);
+        auto child_id = std::get<1>(*it);
+        auto weight = std::get<2>(*it);
+        mapped_hierarchies.insert(parent_id);
+        mapped_hierarchies.insert(child_id);
+    }
+
+    std::set<int> unmapped_patches;
+    for (auto it = pdag.patches.begin(); it != pdag.patches.end(); ++it) {
+        auto patch_id = it->first;
+        auto patch = it->second;
+        unmapped_patches.insert(patch_id);
+    }
+    
+    for (auto it = mapped_hierarchies.begin(); it != mapped_hierarchies.end(); ++it) {
+        auto hierarchy = hierarchyContext.hierarchies.at(*it);
+        auto patches = hierarchy.getPatchIDs();
+        for (auto pit = patches.begin(); pit != patches.end(); ++pit) {
+            unmapped_patches.erase(*pit);
+        }
+    }
+
+    std::cout << "== UNMAPPED PATCHES" << std::endl;
+    int _count = 0;
+    for (auto it = unmapped_patches.begin(); it != unmapped_patches.end(); ++it) {
+        std::cout << "    " << *it << std::endl;
+        if (_count++ > 25) {
+            break;
+        }
+    }
+
 
     DPRINT(
         std::endl
@@ -159,12 +193,64 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         << "size: " << partitioned_edge_list.size()
     );
 
+    // std::cout << "Checking for invalid patches!" << std::endl;
+    // for (auto pit = pdag.patches.begin(); pit != pdag.patches.end(); ++pit) {
+    //     int patch_id = pit->first;
+    //     Patch patch = pit->second;
+    //     if (patch.associated_hierarchies.size() != 1) {
+    //         std::cout << "Patch with multiple hierarchies: " << patch_id << std::endl;
+    //     }
+    //     if (patch.get_closest_hierarchy() <= 0) {
+    //         std::cout << "Patch with invalid closest hierarchy: " << patch_id << " (hierarchy id = " << patch.get_closest_hierarchy() << ")" << std::endl;
+    //     }
+    // }
+
+    using HierarchyID = int;
+
+    std::map<HierarchyID, std::vector<HierarchyID>> parent_map;
+    std::map<HierarchyID, std::vector<HierarchyID>> child_map;
+
+    for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
+        int parent_id = std::get<0>(*vit);
+        int child_id = std::get<1>(*vit);
+        parent_map[child_id].push_back(parent_id);
+        child_map[parent_id].push_back(child_id);
+    }
+
+    for (auto cit = child_map.begin(); cit != child_map.end(); ++cit) {
+        HierarchyID child_id = cit->first;
+        auto parents = cit->second;
+        if (parents.size() > 1) {
+            std::cout << "== Child: " << child_id << std::endl;
+            for (auto pit = parents.begin(); pit != parents.end(); ++pit) {
+                std::cout << "    -- " << *pit << std::endl;
+            }
+        }
+    }
+
+    // for (auto pit = parent_map.begin(); pit != parent_map.end(); ++pit) {
+    //     HierarchyID parent_id = pit->first;
+    //     auto children = pit->second;
+    //     if (children.size() > 1) {
+    //         std::cout << "== Parent: " << parent_id << std::endl;
+    //         for (auto cit = children.begin(); cit != children.end(); ++cit) {
+    //             std::cout << "    -- " << *cit << std::endl; 
+    //         }
+    //     }
+    // }
+
+
     DisjointTrees dt;
     for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
         int parent_id = std::get<0>(*vit);
         int child_id = std::get<1>(*vit);
         double weight = std::get<2>(*vit);
         std::cout << "(parent=" << parent_id << ", child=" << child_id << ", weight=" << weight << ")" << std::endl;
+
+        if (parent_id == 0 || child_id == 0) {
+            std::cout << "Parent, Child :: " << parent_id << ", " << child_id << std::endl;
+            continue;
+        }
 
         // Hierarchy parent = hierarchyContext.hierarchies[parent_id];
         // Hierarchy child = hierarchyContext.hierarchies[child_id];

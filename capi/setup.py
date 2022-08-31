@@ -7,18 +7,12 @@ import platform
 pdal_include_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "include")
 pdal_library_path = os.path.join(os.environ["CONDA_PREFIX"], "Library", "lib")
 
-sys_type = platform.system()
-if sys_type == "Linux":
-    cc_args = [
-        "-ggdb3",
-        "-O0",
-        "-fno-inline-functions"
-    ]
-elif sys_type == "Windows":
-    cc_args = [
-        "/DEBUG"
-    ]
 
+
+if platform.system() == "Windows":
+    extra_compile_args = []
+else:
+    extra_compile_args = ["-ggdb", "-fno-inline-functions", "-O0"]
 
 treeseg_ext_module = Extension("treeseg_ext",
                     # All .cpp source files to be compiled (in the src directory).
@@ -49,7 +43,7 @@ treeseg_ext_module = Extension("treeseg_ext",
                         "pdalcpp",
                         "pdal_util"
                     ],
-                    extra_compile_args= cc_args)
+                    extra_compile_args = extra_compile_args)
 
 
 setup(name = "treeseg_ext",
