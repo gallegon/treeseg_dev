@@ -2,7 +2,7 @@
 
 # capi/build
 # capi/dist
-capi/treeseg.egg-info
+capi/treeseg_ext.egg-info
 capi/build/standalone
 
 python/__pycache__
