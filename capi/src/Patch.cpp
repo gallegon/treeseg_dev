@@ -251,6 +251,7 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
                 p.add_cell(i, j);
                 context.patches.insert(std::pair<int, Patch>(current_feature, p));
                 context.parentless_patches.insert(std::pair<int, Patch>(current_feature, p));
+                connected_patches.insert(std::make_pair(current_feature, current_feature));
             }
 
             // Get the current cell's neighbors, then iterate
@@ -265,6 +266,7 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
                 // neighbor
                 if (neighbor < 0) {
                     //boost::add_edge((neighbor * -1), current_feature, 1, g);
+                    std::cout << "adding edge (" << (neighbor * -1) << ", " << current_feature << ")" << std::endl;
                     connected_patches.insert(std::make_pair((neighbor * -1), current_feature));
                     // Here the current feature is a child patch to some higher level patch.
                     // Therefore this patch cannot be a parentless patch.
@@ -272,6 +274,7 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
                 }
                 // Here the patch is the parent to some lower patch.
                 else {
+                    std::cout << "adding edge (" << current_feature << ", " << neighbor << ")" << std::endl;
                     //boost::add_edge(current_feature, neighbor, 1, g);
                     connected_patches.insert(std::make_pair(current_feature, neighbor));
                     context.parentless_patches.erase(neighbor);
@@ -288,7 +291,16 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
     for (set_iter = connected_patches.begin(); set_iter != connected_patches.end(); ++set_iter) {
         parent = set_iter->first;
         child = set_iter->second;
-        boost::add_edge(parent, child, 1, context.graph);
+
+        std::cout << "(" << parent << ", " << child << ")" << std::endl;
+        if (parent == child) {
+            boost::add_edge(parent, child, 0, context.graph);
+        }
+        else {
+            boost::add_edge(parent, child, 1, context.graph);
+        }
+        
+
     }
 
     // Moved to Hierarchy

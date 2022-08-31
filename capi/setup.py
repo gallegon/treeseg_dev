@@ -34,6 +34,9 @@ treeseg_ext_module = Extension("treeseg_ext",
                     libraries = [
                         "pdalcpp",
                         "pdal_util"
+                    ],
+                    extra_compile_args=[
+                        "-g"
                     ])
 
 
