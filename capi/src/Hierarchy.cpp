@@ -232,8 +232,6 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         // Vertex descriptor for the BGL
         vertex_descriptor s = vertex(vertex_id, pdagContext.graph);
 
-        std::cout << "Vertex: " << vertex_id << std::endl; 
-        std::cout << "Num vertex: " << num_vertices(pdagContext.graph) << std::endl;
         dijkstra_shortest_paths(pdagContext.graph, s,
             predecessor_map(predmap)
             .distance_map(distmap_vect));
