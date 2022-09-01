@@ -9,7 +9,14 @@ typedef std::pair<int, double> MaxInboundEdge;
 // it is as follows: (parent, child)
 typedef std::pair<int, int> HierarchyPair;
 
-typedef std::tuple<int, int, double> DirectedWeightedEdge;
+//typedef std::tuple<int, int, double> DirectedWeightedEdge;
+
+struct DirectedWeightedEdge {
+        int parent;
+        int child;
+        double weight;
+};
+
 struct maximal_inbound_edge {
         int parent;
         double weight;

@@ -231,6 +231,14 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         h.set_tp_cell_count(pdagContext.patches.at(vertex_id).getCellCount());
         // Vertex descriptor for the BGL
         vertex_descriptor s = vertex(vertex_id, pdagContext.graph);
+        
+        /*
+        
+        */
+        // add the top patch to the current hierarchy
+        h.add_patchID(vertex_id, std::make_pair(0,0));
+        
+
 
         dijkstra_shortest_paths(pdagContext.graph, s,
             predecessor_map(predmap)
@@ -262,25 +270,6 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
                 DEBUG(total_reachable += 1;);
             }
         }
-
-        //Print the reachable patches
-        /*
-        std::vector<int> reachablePatches = h.getPatchIDs();
-
-        std::vector<int>::iterator h_it;
-
-
-
-
-        std::cout << "Hierarchy ID: " << hierarchy_id << std::endl;
-        std::cout << "Reachable Patches by ID: ";
-        for (h_it = reachablePatches.begin(); h_it != reachablePatches.end(); ++h_it) {
-            std::cout << *h_it << ", ";
-        }
-
-        std::cout << std::endl;
-        */
-        //end test print
 
 
         // For debugging/tracing purposes; print an update every 1% of parentless patches processed.

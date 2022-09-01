@@ -78,10 +78,8 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
     Hierarchy *h1, *h2;
     int h1_id, h2_id;
     
-    // double weight_threshold = *((float *) PyArray_GETPTR1(weights, 5));
     double weight_threshold = weights[5];
 
-    //std::vector<DirectedWeightedEdge> edges;
 
     // Size of patches set for each hierarchy, and for the shared cell cell count
     int h1_p_size, h2_p_size, shared_cell_count;
@@ -178,12 +176,6 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         top_distance = get_distance(h1->get_TPC(), h2->get_TPC());
         centroid_distance = get_distance(h1->get_HAC(), h2->get_HAC());
 
-        // std::cout << std::endl;
-        // std::cout << "H1 ID: " << h1->get_id() << " || " << "H2 ID: " << h2->get_id() << std::endl;
-        // std::cout << "H1 HAC: (" << h1->get_HAC().first << ", " << h1->get_HAC().second << ") || ";
-        // std::cout << "H2 HAC: (" << h2->get_HAC().first << ", " << h2->get_HAC().second << ")" << std::endl;
-        // std::cout << "CD: " << centroid_distance << std::endl;
-
         /*
         The following represent the weights given in the initial parameters
         The weights are as follows:
@@ -198,19 +190,12 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
 
         double edge_weight;
 
-        // Get the weights from the NumPy array object
-        // ld_weight = *((float *) PyArray_GETPTR1(weights, 0));
-        // nd_weight = *((float *) PyArray_GETPTR1(weights, 1));
-        // sr_weight = *((float *) PyArray_GETPTR1(weights, 2));
-        // td_weight = *((float *) PyArray_GETPTR1(weights, 3));
-        // cd_weight = *((float *) PyArray_GETPTR1(weights, 4));
         ld_weight = weights[0];
         nd_weight = weights[1];
         sr_weight = weights[2];
         td_weight = weights[3];
         cd_weight = weights[4];
-        // std::cout << "Weights: " << ld_weight << ", " << nd_weight << ", " << sr_weight << ", " << td_weight << ", " << cd_weight << std::endl;
-        // std::cout << "Stats:   " << min_ld << ", " << min_nd << ", " << shared_cell_count << ", " << top_distance << ", " << centroid_distance << std::endl;
+
         ld_score = 1 / min_ld;
         nd_score = 1 / min_nd;
         sr_score = shared_cell_count / (h1->get_cell_count() + h2->get_cell_count() - shared_cell_count);
@@ -220,14 +205,9 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
 
         HierarchyPair edge = get_direction(h1, h2);
 
-        // std::cout<< "Directed Edge: (" << edge.first << ", " << edge.second << ") weight: " << edge_weight << std::endl;
-
         edge_weight = (ld_weight * ld_score) + (nd_weight * nd_score) +
                       (sr_weight * sr_score) + (td_weight * td_score) +
                       (cd_weight * cd_score);
-        //std::cout << "(" << h1_id << ", " << h2_id << ") weight: " << edge_weight << std::endl;
-
-        // std::cout << std::endl;
 
         int parent = edge.first;
         int child = edge.second;
@@ -259,13 +239,14 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
     // Create a list of edges for the partitioend graph
     int parent, child;
     double weight;
+    struct DirectedWeightedEdge edge;
 
     for (mie_it = maximal_inbound_edges.begin(); mie_it != maximal_inbound_edges.end(); ++mie_it) {
-        parent = mie_it->second.first;
-        child = mie_it->first;
-        weight = mie_it->second.second;
-        edges.push_back(std::make_tuple(parent, child, weight));
-        DPRINT("(" << parent << ", " << child << ") Weight: " << weight);
+        edge.parent = mie_it->second.first;
+        edge.child = mie_it->first;
+        edge.weight = mie_it->second.second;
+        edges.push_back(edge);
+        DPRINT("(" << edge.parent << ", " << edge.child << ") Weight: " << edge.weight);
     }
 }
 
@@ -282,43 +263,17 @@ void adjust_patches(struct HierarchyData& hierarchyContext, struct PdagData& pda
 
     std::vector<int> *hierarchies;
 
-
-
-
     for (patch_itr = patches_ptr->begin(); patch_itr != patches_ptr->end(); ++patch_itr) {
         current_patch = &(patch_itr->second);
 
         hierarchies = &(patch_itr->second.associated_hierarchies);
-        //std::cout << " Patch id: " << patch_itr->first;
-        //std::cout << " Hierarchies size: " << patch_itr->second.associated_hierarchies.size() << std::endl;
+
         for (hier_itr = hierarchies->begin(); hier_itr != hierarchies->end(); ++hier_itr) {
             hac = (*hierarchies_ptr)[*hier_itr].get_HAC();
             current_patch->adjust_hierarchy(*hier_itr, hac);
-
-            // patch.check_closest(currentHAC, hierarchy_ID)
-            // if closer, update closest id, update closeset distance
-
         }
 
     }
-
-    /*
-    std::map<int, Hierarchy>::iterator hier_map_it;
-
-
-    for (hier_map_it = hierarchies_ptr->begin(); hier_map_it != hierarchies_ptr->end(); ++hier_map_it) {
-        cells = hier_map_it->second.get_adjusted_cells();
-        std::cout << "Hierachy ID: " << hier_map_it->first << " Cells: ";
-        for (c_it = cells.begin(); c_it != cells.end(); ++c_it) {
-            std::cout << "(" << c_it->first << ", " << c_it->second << ") ";
-        }
-        std::cout << std::endl;
-    }
-
-    for (patch_itr = patches_ptr->begin(); patch_itr != patches_ptr->end(); ++patch_itr) {
-        std::cout << "Patch ID: " << patch_itr->first << " closest hierarchy id: " << patch_itr->second.get_closest_hierarchy() << std::endl;
-    }
-    */
 }
 
 void map_cells_to_hierarchies(struct HierarchyData& hierarchyContext, struct PdagData& pdagContext) {

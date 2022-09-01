@@ -138,6 +138,14 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     //calculateHAC(pdag, hierarchyContext);
     adjust_patches(hierarchyContext, pdag);
     map_cells_to_hierarchies(hierarchyContext, pdag);
+
+    int mapped_cc = 0;
+    for (auto h_itr = hierarchyContext.hierarchies.begin(); h_itr != hierarchyContext.hierarchies.end(); ++ h_itr) {
+        mapped_cc += h_itr->second.get_adjusted_cells().size();
+    }
+
+    //std::cout << "***************MAPPED CELL COUNT = " << mapped_cc << std::endl;
+
     float weights[6] = {
         *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 0))),
         *(static_cast<float*>(PyArray_GETPTR1(arrayParams, 1))),
@@ -148,16 +156,12 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     };
     create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
-    for (auto p_itr = pdag.patches.begin(); p_itr != pdag.patches.end(); ++p_itr ) {
-        std::cout << "Patch: " << p_itr->second.get_id() << " closest hierarchy: " << p_itr->second.get_closest_hierarchy() << std::endl;
-    }
-
     std::set<int> mapped_hierarchies;
 
     for (auto it = partitioned_edge_list.begin(); it != partitioned_edge_list.end(); ++it) {
-        auto parent_id = std::get<0>(*it);
-        auto child_id = std::get<1>(*it);
-        auto weight = std::get<2>(*it);
+        int parent_id = it->parent;
+        int child_id = it->child;
+        double weight = it->weight;
         mapped_hierarchies.insert(parent_id);
         mapped_hierarchies.insert(child_id);
     }
@@ -177,6 +181,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         }
     }
 
+    /*
     std::cout << "== UNMAPPED PATCHES" << std::endl;
     int _count = 0;
     for (auto it = unmapped_patches.begin(); it != unmapped_patches.end(); ++it) {
@@ -185,7 +190,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
             break;
         }
     }
-
+    */
 
     DPRINT(
         std::endl
@@ -211,12 +216,13 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     std::map<HierarchyID, std::vector<HierarchyID>> child_map;
 
     for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
-        int parent_id = std::get<0>(*vit);
-        int child_id = std::get<1>(*vit);
+        int parent_id = vit->parent;
+        int child_id = vit->child;
         parent_map[child_id].push_back(parent_id);
         child_map[parent_id].push_back(child_id);
     }
 
+    /*
     for (auto cit = child_map.begin(); cit != child_map.end(); ++cit) {
         HierarchyID child_id = cit->first;
         auto parents = cit->second;
@@ -227,7 +233,35 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
             }
         }
     }
+    */
 
+    // Attempt to quick fix missing hierarchies by adding parentless hierarchies to roots
+    auto hierarchies = &(hierarchyContext.hierarchies);
+    std::unordered_set<int> parentless_hierarchies;
+
+    // Iterate through all the hierarchies and add all the IDs to a set
+    for (auto it = hierarchies->begin(); it != hierarchies->end(); ++it) {
+        parentless_hierarchies.insert(it->second.get_id());
+    }
+
+    for (auto edge : partitioned_edge_list) {
+        auto child = edge.child;
+        if (parentless_hierarchies.find(child) == parentless_hierarchies.end()) {
+            continue;
+        }
+        else {
+            parentless_hierarchies.erase(child);
+        }
+    }
+
+    struct DirectedWeightedEdge temp;
+
+    for (auto parentless: parentless_hierarchies) {
+        temp.parent = parentless;
+        temp.child = parentless;
+        temp.weight = 0;
+        partitioned_edge_list.push_back(temp);
+    }
     // for (auto pit = parent_map.begin(); pit != parent_map.end(); ++pit) {
     //     HierarchyID parent_id = pit->first;
     //     auto children = pit->second;
@@ -242,10 +276,16 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     DisjointTrees dt;
     for (std::vector<DirectedWeightedEdge>::iterator vit = partitioned_edge_list.begin(); vit != partitioned_edge_list.end(); ++vit) {
+        
+        /*
         int parent_id = std::get<0>(*vit);
         int child_id = std::get<1>(*vit);
         double weight = std::get<2>(*vit);
-        std::cout << "(parent=" << parent_id << ", child=" << child_id << ", weight=" << weight << ")" << std::endl;
+        */
+
+        int parent_id = vit->parent;
+        int child_id = vit->child;
+        double weight = vit->weight;
 
         if (parent_id == 0 || child_id == 0) {
             std::cout << "Parent, Child :: " << parent_id << ", " << child_id << std::endl;
@@ -271,6 +311,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         // std::cout << "Unioned trees" << std::endl;
     }
 
+
     
     // PyArrayObject* hierarchy_labels = (PyArrayObject*) PyArray_SimpleNew(ndims, dims, NPY_INT);
     PyArrayObject* hierarchy_labels = (PyArrayObject*) PyArray_ZEROS(2, dims, NPY_INT, 0);
@@ -280,9 +321,13 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     DPRINT("== Roots");
     auto roots = dt.roots();
 
+    // add the found parentless hierarchies roots
+    for (auto ph_id : parentless_hierarchies) {
+        roots.insert(ph_id);
+    }
+
     for (auto it = roots.begin(); it != roots.end(); ++it) {
         TreeID tree_id = *it;
-        
         DPRINT("  " << *it);
         
         auto hs = dt.hierarchies_from_tree(tree_id);
