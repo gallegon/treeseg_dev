@@ -153,7 +153,7 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
         but for the time being just implementing it here.
         */
         for (p_it = patch_intersection.begin(); p_it != patch_intersection.end(); ++ p_it) {
-            shared_cell_count += p_ptr->at(*p_it).getCellCount();
+            shared_cell_count += p_ptr->at(*p_it).get_cell_count();
             h1_depths = h1->getPatchDepths(*p_it);
             h2_depths = h2->getPatchDepths(*p_it);
 
@@ -232,8 +232,6 @@ void create_HDAG(std::vector<DirectedWeightedEdge>& edges,
 
     }
 
-    // std::cout << std::endl;
-    
     DPRINT("Maximal inbound edges list");
     
     // Create a list of edges for the partitioend graph

@@ -17,9 +17,6 @@
 #include "debug.hpp"
 //#include <chrono>
 
-// #define Ptr2D(array, i, j) ((int*) PyArray_GETPTR2(array, i, j))
-// #define Get2D(array, i, j) (*((int*) PyArray_GETPTR2(array, i, j)))
-
 typedef boost::property<boost::edge_weight_t, int> EdgeWeightProperty;
 typedef boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, boost::no_property, EdgeWeightProperty > DirectedGraph;
 typedef boost::graph_traits<DirectedGraph>::edge_iterator edge_iterator;
@@ -50,9 +47,9 @@ public:
     void adjust_hierarchy(int, Centroid);
     int get_closest_hierarchy();
     int get_level();
-    int getCellCount();
+    int get_cell_count();
     std::vector<Cell> get_cells();
-    std::pair<double, double> getCentroid();
+    std::pair<double, double> get_centroid();
     void operator = (const Patch&);
 
     int get_id() { return id; }
@@ -61,7 +58,7 @@ public:
 // This is a struct that will be used to pass data to the Hierarchy step
 struct PdagData {
     std::map<int, Patch> patches;
-    std::map<int, Patch> parentless_patches;
+    std::unordered_set<int> parentless_patches;
     DirectedGraph graph;
 };
 

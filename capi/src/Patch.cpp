@@ -44,6 +44,8 @@ void Patch::update_centroid() {
     this->centroid.second = this->sum_y / this->cell_count;
 }
 
+// This is an old function for print debugging.  This shouldn't be necessary to use
+// with the GDB debugging setup.
 void Patch::print_cells() {
     std::vector<std::pair<int, int> >::iterator it;
     for (it = this->cells.begin(); it != this->cells.end(); ++it) {
@@ -69,6 +71,7 @@ void Patch::add_hierarchy(int hierarchy_id, std::set<std::pair<int, int> >& conn
     }
 }
 
+
 void Patch::adjust_hierarchy(int hierarchy_id, Centroid hac)
 {
 
@@ -90,11 +93,11 @@ int Patch::get_level() {
     return (this->level);
 }
 
-int Patch::getCellCount() {
+int Patch::get_cell_count() {
     return (this->cell_count);
 }
 
-std::pair<double, double> Patch::getCentroid() {
+std::pair<double, double> Patch::get_centroid() {
     return (this->centroid);
 }
 
@@ -121,9 +124,11 @@ void addDirectedNeighbor(std::vector<int>& neighbors, Cell neighbor, int current
     int neighbor_id = labels.get(neighbor_i, neighbor_j);
     int neighbor_level = levels.get(neighbor_i, neighbor_j);
 
-    // if the id of the feature is different the the current id, we know that
-    // two patches are connected.  Also check that the neighbor's level is
-    // not equal to 0.  We don't want to consider level 0 as patches.
+    /*
+    If the id of the feature is different the the current id, we know that
+    two patches are connected.  Also check that the neighbor's level is
+    not equal to 0.  We don't want to consider level 0 as patches.
+    */
     if (neighbor_id != current_id && neighbor_level != 0) {
         if (neighbor_level > current_level) {
             // set the direction flag towards the higher neighbor
@@ -139,12 +144,16 @@ void addDirectedNeighbor(std::vector<int>& neighbors, Cell neighbor, int current
 #define RIGHT 1
 #define LEFT -1
 
+/*
+This function gets the valid neighboring cells if there are any.  A valid
+neighbor is a neighbor that: isn't equal to the current cell's ID and is 
+within bounds of the array.  This is a helper function to get_neighbors.
+*/
 std::vector<Cell> get_valid_neighbors(int i, int j, int* dimensions) {
     std::vector<Cell> valid_neighbors;
 
     int m = dimensions[0];
     int n = dimensions[1];
-
 
     if ((i - 1) >= 0)
         valid_neighbors.push_back(std::make_pair(i + TOP, j));
@@ -159,18 +168,14 @@ std::vector<Cell> get_valid_neighbors(int i, int j, int* dimensions) {
         valid_neighbors.push_back(std::make_pair(i, j + RIGHT));
 
     return valid_neighbors;
-
 }
 
-std::vector<int> get_neighbors(int i, int j, int* dimensions, Grid<int>& labels, Grid<int>& levels) {
-    // m is the i size of the array, n is the j size
-    int m = dimensions[0];
-    int n = dimensions[1];
 
-    int neighbor_i, neighbor_j;
-    
-    // This is for the valid neighbors of a given cell.  Valid neighbors are
-    // calculated below
+/*
+This will compute the patch neighbors based on a current cell
+*/
+std::vector<int> get_neighbors(int i, int j, int* dimensions, Grid<int>& labels, Grid<int>& levels) {
+    // This is for the valid neighbors of a given cell.  Valid neighbors are calculated below
     std::vector<int> neighbors;
 
     std::vector<Cell> neighboring_cells;
@@ -179,7 +184,11 @@ std::vector<int> get_neighbors(int i, int j, int* dimensions, Grid<int>& labels,
     int current_id = labels.get(i, j);
     int current_level = levels.get(i, j);
 
-    ///*
+    /*
+    Get neighboring cells that are valid (within bounds of the array) and not part of the 
+    current cell's patch if there are any.  neighboring_cells may be empty if the cell is 
+    in the middle of a patch and only surrounded by cells within the same patch.
+    */
     neighboring_cells = get_valid_neighbors(i, j, dimensions);
 
     for (auto nc_it = neighboring_cells.begin(); nc_it != neighboring_cells.end(); ++nc_it) {
@@ -194,7 +203,6 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
     // This is an edge list of what will ultimately become the PDAG
     std::set<std::pair<int, int> > connected_patches;
     std::set<std::pair<int, int> >::iterator set_iter;
-
 
     int m = levels.width;
     int n = levels.height;
@@ -229,7 +237,7 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
                 Patch p(current_feature, current_level);
                 p.add_cell(i, j);
                 context.patches.insert(std::pair<int, Patch>(current_feature, p));
-                context.parentless_patches.insert(std::pair<int, Patch>(current_feature, p));
+                context.parentless_patches.insert(current_feature);
                 connected_patches.insert(std::make_pair(current_feature, current_feature));
             }
 
@@ -237,11 +245,11 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
             std::vector<int> neighbors = get_neighbors(i, j, dimensions, labels, levels);
             for (auto neigh_it = neighbors.begin(); neigh_it != neighbors.end(); ++neigh_it) {
                 int neighbor = *neigh_it;
-
-
-                // Build the directed graph.  Direction is determined by the patch's height relative to a
-                // neighbor.  If a neighbor in neighbors is negative, then the patch is a child to it's
-                // neighbor
+                /*
+                Build the directed graph.  Direction is determined by the patch's height relative to a
+                neighbor.  If a neighbor in neighbors is negative, then the patch is a child to it's
+                neighbor
+                */
                 if (neighbor < 0) {
                     connected_patches.insert(std::make_pair((neighbor * -1), current_feature));
                     // Here the current feature is a child patch to some higher level patch.
@@ -261,14 +269,27 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
     
     // some abstraction for graph creation
     int parent, child;
-    // add all the edges to the Boost graph container
+
+    // add all the edges to the Boost graph container to form the Patch Directed Acyclic Graph
     for (set_iter = connected_patches.begin(); set_iter != connected_patches.end(); ++set_iter) {
         parent = set_iter->first;
         child = set_iter->second;
 
+        /*
+        Add a self edge to the patch directed acyclic graph (PDAG), this is a fix 
+        otherwise the program will crash when it uses the boost graph library. 
+        This specifically happens during dijkstra_shortest_paths() from the BGL
+        during the hierarchy creation step.  
+        
+        Technically this violates the "acyclic" rule of the PDAG, as there is a 
+        cycle from each parentless patch to itself with a weight of 0.  However 
+        this doesn't seem to cause any problems.
+        */
         if (parent == child) {
             boost::add_edge(parent, child, 0, context.graph);
         }
+
+        // Otherwise, add the edge
         else {
             boost::add_edge(parent, child, 1, context.graph);
         }
@@ -278,6 +299,9 @@ void create_patches(Grid<int>& labels, Grid<int>& levels, struct PdagData& conte
 }
 
 
+/*
+Compute the Euclidean distance between two Centroids.
+*/
 double get_distance(Centroid c1, Centroid c2) {
     double x1, x2, y1, y2;
     double xs_squared, ys_squared;

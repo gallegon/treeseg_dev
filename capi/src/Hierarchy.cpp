@@ -118,8 +118,8 @@ void calculateHAC(struct PdagData& pdagContext, struct HierarchyData& hierarchyC
             // This loop inspects each patch in a hierarchy to compute the height adjusted
             // centroid and the
             patch = pdagContext.patches.at(*patchItr);
-            cellCount = pdagContext.patches.at(*patchItr).getCellCount();
-            patchCentroid = pdagContext.patches.at(*patchItr).getCentroid();
+            cellCount = pdagContext.patches.at(*patchItr).get_cell_count();
+            patchCentroid = pdagContext.patches.at(*patchItr).get_centroid();
 
             // These represent the Patch centroid's elements (x, y)
             centroidX = patchCentroid.first;
@@ -158,15 +158,14 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
     // map from a hierarchy id to a Hierarchy object
     std::map<int, Hierarchy> hierarchies;
 
-    //DirectedGraph g = pdagContext.graph;
-    //std::map<int, Patch> patches = pdagContext.patches;
-
-    // Use this dictionary to keep track of patches that have no parent.
-    // These will be the "local maxima" patches
-    //std::map<int, Patch> parentless_patches = pdagContext.parentless_patches;
-
     DPRINT("Num of parentless patches = " << pdagContext.parentless_patches.size());
 
+    /*
+    The following is for the Boost Graph Library.  We want to do a graph traversal from 
+    each of the top patches (in parentless_patches) to reachable lower patches to create 
+    each hierarchy.  The following section of code using the BGL replaces much of the 
+    custom graph code that was used in the pure python version.
+    */
     typedef boost::graph_traits<DirectedGraph>::vertex_descriptor vertex_descriptor;
     typedef boost::property_map<DirectedGraph, boost::vertex_index_t>::type IdMap;
 
@@ -203,16 +202,26 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
     int hierarchy_id = 1;
     int hierarchy_level, nodeDepth, levelDepth;
 
-    std::map<int, Patch>::iterator it;
-
-
-
+    //std::map<int, Patch>::iterator it;
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    for (it = pdagContext.parentless_patches.begin(); it != pdagContext.parentless_patches.end(); ++it) {
+    /*
+    This is the bulk of the Hierarchy step. This loop does the following:
+        Iterate through every parentless patch (local maxima, there are no
+        neighboring patches that are higher)
+        
+        For every parentless patch:
+            Use the boost graph library to do a dijkstra's shortest paths search
+            to each reachable patch from the parentless patch.  The shortest path
+            weight is later used as the "node depth" statistic during the weighted
+            graph creation step.  The set of all reachable patches from a 
+            the parentless patch (top patch) becomes the hierarchy.
+    */
+    for (auto it : pdagContext.parentless_patches) {
 
-        int vertex_id = it->first;
+        // vertex_id is the root node for the hierarchy, a top patch/parentless patch ID
+        int vertex_id = it;
 
         if (vertex_id < 0 || vertex_id > pdagContext.patches.size()) {
             DPRINT("WORKING WITH VERTEX: " << vertex_id);
@@ -227,14 +236,11 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         hierarchies.insert(std::pair<int, Hierarchy>(hierarchy_id, h));
 
         // Set top patch centroid for the hierarchy
-        h.set_TPC(pdagContext.patches.at(vertex_id).getCentroid());
-        h.set_tp_cell_count(pdagContext.patches.at(vertex_id).getCellCount());
+        h.set_TPC(pdagContext.patches.at(vertex_id).get_centroid());
+        h.set_tp_cell_count(pdagContext.patches.at(vertex_id).get_cell_count());
         // Vertex descriptor for the BGL
         vertex_descriptor s = vertex(vertex_id, pdagContext.graph);
         
-        /*
-        
-        */
         // add the top patch to the current hierarchy
         h.add_patchID(vertex_id, std::make_pair(0,0));
         
@@ -288,6 +294,7 @@ void compute_hierarchies(struct PdagData& pdagContext, struct HierarchyData& hie
         hierarchy_id++;
     }
 
+    // Write the hierarchies to the context, calculate all the height-adjusted centroid
     hierarchyContext.hierarchies = hierarchies;
     calculateHAC(pdagContext, hierarchyContext);
 

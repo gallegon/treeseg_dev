@@ -156,6 +156,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
     };
     create_HDAG(partitioned_edge_list, hierarchyContext, pdag, weights);
 
+    /*
     std::set<int> mapped_hierarchies;
 
     for (auto it = partitioned_edge_list.begin(); it != partitioned_edge_list.end(); ++it) {
@@ -172,7 +173,8 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         auto patch = it->second;
         unmapped_patches.insert(patch_id);
     }
-    
+    */
+    /*
     for (auto it = mapped_hierarchies.begin(); it != mapped_hierarchies.end(); ++it) {
         auto hierarchy = hierarchyContext.hierarchies.at(*it);
         auto patches = hierarchy.getPatchIDs();
@@ -181,7 +183,7 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
         }
     }
 
-    /*
+
     std::cout << "== UNMAPPED PATCHES" << std::endl;
     int _count = 0;
     for (auto it = unmapped_patches.begin(); it != unmapped_patches.end(); ++it) {
@@ -246,12 +248,12 @@ static PyObject* vector_test(PyObject* self, PyObject* args) {
 
     for (auto edge : partitioned_edge_list) {
         auto child = edge.child;
-        if (parentless_hierarchies.find(child) == parentless_hierarchies.end()) {
-            continue;
-        }
-        else {
+        //if (parentless_hierarchies.find(child) == parentless_hierarchies.end()) {
+        //    continue;
+        //}
+        //else {
             parentless_hierarchies.erase(child);
-        }
+        //}
     }
 
     struct DirectedWeightedEdge temp;
