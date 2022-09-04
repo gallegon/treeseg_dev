@@ -1,7 +1,7 @@
 .vscode
 
-# capi/build
-# capi/dist
+capi/build
+capi/dist
 capi/treeseg_ext.egg-info
 capi/build/standalone
 

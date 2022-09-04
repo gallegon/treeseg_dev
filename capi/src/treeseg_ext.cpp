@@ -14,10 +14,80 @@
 #include "pdalfilter.hpp"
 #include "disjointtrees.hpp"
 #include "grid.hpp"
+#include "FilterLabelPoints.hpp"
 
 #include "debug.hpp"
 
+static PyObject* label_points(PyObject* self, PyObject* args) {
+    char* filepath_in;
+    char* filepath_out;
+    double resolution;
+    PyObject* arg_grid;
 
+    if (!PyArg_ParseTuple(args, "ssdO", &filepath_in, &filepath_out, &resolution, &arg_grid)) {
+        return NULL;
+    }
+
+    PyArrayObject* array_grid = (PyArrayObject*) PyArray_FROM_OTF(arg_grid, NPY_INT, NPY_ARRAY_IN_ARRAY);
+    if (array_grid == NULL) {
+        return NULL;
+    }
+
+    int width = PyArray_DIM(array_grid, 0);
+    int height = PyArray_DIM(array_grid, 1);
+    Grid<int> grid(width, height, PyArray_DATA(array_grid));
+
+    using namespace pdal;
+
+    PointTable table;
+    // Register the "default" dimensions we care about.
+    table.layout()->registerDim(Dimension::Id::X);
+    table.layout()->registerDim(Dimension::Id::Y);
+    table.layout()->registerDim(Dimension::Id::Z);
+    table.layout()->registerOrAssignDim("TreeID", Dimension::Type::Unsigned64);
+    // auto dim_id = table.layout()->assignDim("TreeID", Dimension::Type::Unsigned64);
+
+    StageFactory factory;
+
+    // Create stages
+    Stage* reader = factory.createStage("readers.las");
+    // Stage* ferry = factory.createStage("filters.ferry");
+    FilterLabelPoints* filter = dynamic_cast<FilterLabelPoints*>(factory.createStage("filters.labelpoints"));
+    Stage* writer = factory.createStage("writers.las");
+
+    Options options;
+    options.add("filename", filepath_in);
+    // options.add("extra_dims", "TreeID=uint64");
+    reader->setOptions(options);
+
+    // Options opt_ferry;
+    // opt_ferry.add("dimensions", "=>TreeID");
+    // ferry->setOptions(opt_ferry);
+
+    Options opt_writer;
+    opt_writer.add("filename", filepath_out);
+    opt_writer.add("forward", "all");
+    opt_writer.add("extra_dims", "all");
+    opt_writer.add("minor_version", "4");
+    // opt_writer.add("compression", "laszip");
+    writer->setOptions(opt_writer);
+
+    // ferry->setInput(*reader);
+
+    filter->setResolution(resolution);
+    filter->withReader(*reader);
+    filter->withGrid(&grid);
+    filter->setInput(*reader);
+
+    writer->setInput(*filter);
+    // writer->setLog(writer->log());
+    std::cout << "== Executing label points PDAL pipeline" << std::endl;
+    writer->prepare(table);
+    writer->execute(table);
+    std::cout << "== Finished labeling .las file" << std::endl;
+
+    Py_RETURN_NONE;
+}
 
 static PyObject* discretize_points(PyObject* self, PyObject* args) {
     char* filepath_in;
@@ -35,8 +105,6 @@ static PyObject* discretize_points(PyObject* self, PyObject* args) {
     table.layout()->registerDim(Dimension::Id::X);
     table.layout()->registerDim(Dimension::Id::Y);
     table.layout()->registerDim(Dimension::Id::Z);
-    // Create and register a new dimension "TreeID" of type uint64.
-    // table.layout()->assignDim("TreeID", Dimension::Type::Unsigned64);
 
     StageFactory factory;
 
@@ -360,6 +428,7 @@ static PyMethodDef treesegMethods[] = {
     {"discretize_points", discretize_points, METH_VARARGS, "Discretize a set of points into a 2d grid."},
     {"label_grid", label_grid, METH_VARARGS, "Label contiguous patches"},
     {"vector_test", vector_test, METH_VARARGS, "Neighbors on neighbors"},
+    {"label_points", label_points, METH_VARARGS, "Label points based on a raster"},
     {NULL, NULL, NULL, NULL}
 };
 

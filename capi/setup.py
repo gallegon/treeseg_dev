@@ -23,7 +23,8 @@ treeseg_ext_module = Extension("treeseg_ext",
                         "pdalfilter.cpp",
                         "Hierarchy.cpp",
                         "HDAG.cpp",
-                        "disjointtrees.cpp"
+                        "disjointtrees.cpp",
+                        "FilterLabelPoints.cpp"
                     ]],
                     # Directories to any .hpp header files to be included.
                     include_dirs = [

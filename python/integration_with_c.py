@@ -51,16 +51,21 @@ def handle_label_patches(grid):
         "labeled_grid": labeled_grid
     }
 
-def handle_label_las(input_file_path, output_folder_path, grid):
-    output_file_path = os.path.join(output_folder_path, "test_output.las")
-    ts.label_las(input_file_path, output_file_path, grid)
-
 def handle_read_and_discretize_points(input_file_path, resolution, discretization):
     grid = ts.discretize_points(input_file_path, resolution, discretization)
     
     return {
         "grid": grid
     }
+
+def handle_label_points(input_file_path, output_folder_path, resolution, labeled_grid):
+    _, filename = os.path.split(input_file_path)
+    name, _ = os.path.splitext(filename)
+    output_file_path = os.path.join(output_folder_path, f"{name}_labeled.las")
+    print("== Begin label points")
+    # print(f"py: (95, 0) = {labeled_grid[95, 0]}")
+    ts.label_points(input_file_path, output_file_path, resolution, labeled_grid)
+    print("== End label points")
 
 c_pipeline = Pipeline().then([
     handle_create_file_names_and_paths,
@@ -71,7 +76,8 @@ c_pipeline = Pipeline().then([
     handle_label_patches,
     handle_save_patches_raster,
     handle_vector_test,
-    handle_save_partition_raster
+    handle_save_partition_raster,
+    handle_label_points
 ]) \
 .transform([
     transform_print_stage_info,
